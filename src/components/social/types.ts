@@ -54,7 +54,7 @@ export type DataRecord = { [key: string]: FieldValue };
 type BaseField = { key: string; label: string; hint?: string };
 
 export type ItemField = BaseField & {
-  type: "text" | "number" | "country";
+  type: "text" | "number" | "country" | "image";
   /** Width of the input inside a list row. */
   size?: "xs" | "sm" | "md" | "grow";
   min?: number;

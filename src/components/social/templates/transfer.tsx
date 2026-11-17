@@ -25,10 +25,10 @@ type TransferData = {
   note: string;
 };
 
-function Club({ name, code, logo, label }: { name: string; code: string; logo: string; label: string }) {
+function Club({ name, code, logo, label, path }: { name: string; code: string; logo: string; label: string; path: string }) {
   return (
     <div className="flex min-w-0 flex-1 items-center gap-5">
-      <Crest src={logo} code={code} className="size-[96px] text-[27px]" />
+      <Crest src={logo} code={code} path={path} className="size-[96px] text-[27px]" />
       <div className="min-w-0">
         <Label className="text-[15px]">{label}</Label>
         <p className="truncate text-[30px] font-semibold">{name}</p>
@@ -56,11 +56,11 @@ function TransferCard({ data, format, brand }: TemplateProps<TransferData>) {
 
   const clubs = (
     <Panel className="flex items-center gap-5 px-7 py-5">
-      <Club name={data.fromName} code={data.fromCode} logo={data.fromLogo} label="Eski kulüp" />
+      <Club name={data.fromName} code={data.fromCode} logo={data.fromLogo} label="Eski kulüp" path="fromLogo" />
       <span className="grid size-[60px] shrink-0 place-items-center rounded-full bg-fm-accent text-fm-on-accent">
         <ArrowRight className="size-[32px]" strokeWidth={2.5} />
       </span>
-      <Club name={data.toName} code={data.toCode} logo={data.toLogo} label="Yeni kulüp" />
+      <Club name={data.toName} code={data.toCode} logo={data.toLogo} label="Yeni kulüp" path="toLogo" />
     </Panel>
   );
 
@@ -93,7 +93,7 @@ function TransferCard({ data, format, brand }: TemplateProps<TransferData>) {
     return (
       <CardFrame format={format} brand={brand} tag={data.tag}>
         <div className="flex min-h-0 flex-1 gap-10">
-          <Photo src={data.photo} alt={data.name} className="w-[400px]" />
+          <Photo src={data.photo} alt={data.name} path="photo" className="w-[400px]" />
           <div className="flex min-w-0 flex-1 flex-col justify-between gap-4">
             {identity}
             {clubs}
@@ -112,6 +112,7 @@ function TransferCard({ data, format, brand }: TemplateProps<TransferData>) {
           <Photo
             src={data.photo}
             alt={data.name}
+            path="photo"
             className={cn("min-h-[240px]", layout === "story" ? "w-[380px]" : "w-[330px]")}
           />
           <div className="flex min-w-0 flex-1 flex-col justify-center">{identity}</div>

@@ -2,6 +2,7 @@ import type { TemplateDefinition } from "../types";
 import { announcement } from "./announcement";
 import { comparison } from "./comparison";
 import { fixtures } from "./fixtures";
+import { fmProfile } from "./fm-profile";
 import { leagueTable } from "./league-table";
 import { lineup, nationsLineup, tactic } from "./lineup";
 import { matchResult } from "./match-result";
@@ -22,6 +23,7 @@ import { transfer } from "./transfer";
  */
 export const TEMPLATES: TemplateDefinition[] = [
   playerReview,
+  fmProfile,
   playerRecommendation,
   scoutReport,
   comparison,

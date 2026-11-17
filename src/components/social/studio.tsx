@@ -2,15 +2,35 @@
 
 import { zipSync } from "fflate";
 import { toBlob } from "html-to-image";
-import { Check, Download, LayoutGrid, Loader2, Palette, RotateCcw } from "lucide-react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  Check,
+  Download,
+  LayoutGrid,
+  Loader2,
+  Palette,
+  RotateCcw,
+} from "lucide-react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
-import { AutoForm } from "./auto-form";
-import { BODY_FONTS, FORMATS, HEADING_FONTS, THEMES, getFormat } from "./formats";
+import { AutoForm, readImage } from "./auto-form";
+import { EditContext } from "./edit-context";
+import type { ImageEditor } from "./edit-context";
+import {
+  BODY_FONTS,
+  FORMATS,
+  HEADING_FONTS,
+  THEMES,
+  getFormat,
+} from "./formats";
 import { TEMPLATES } from "./templates";
 import type { Brand, Category, DataRecord, Format, FormatId } from "./types";
 
-const CATEGORIES: Category[] = ["Oyuncu", "Kadro ve Taktik", "Maç ve Lig", "İçerik"];
+const CATEGORIES: Category[] = [
+  "Oyuncu",
+  "Kadro ve Taktik",
+  "Maç ve Lig",
+  "İçerik",
+];
 
 const STORAGE_KEY = "fm-studio-v1";
 
@@ -31,8 +51,8 @@ const DEFAULT_STATE: StudioState = {
   showAll: false,
   exportIds: ["ig-portrait", "x-landscape"],
   brand: {
-    name: "FM Atölye",
-    handle: "@fmatolye",
+    name: "Sinyor Selim",
+    handle: "@sinyorselim",
     footnote: "Football Manager 26",
     link: "youtube.com/sinyorselim",
     logo: "",
@@ -55,6 +75,19 @@ function saveFile(blob: Blob, name: string) {
   setTimeout(() => URL.revokeObjectURL(url), 10_000);
 }
 
+/** Writes an image into `data` at "key" or "list.index.key". */
+function setAtPath(data: DataRecord, path: string, value: string): DataRecord {
+  const [key, index, cell] = path.split(".");
+  if (cell === undefined) return { ...data, [key]: value };
+  const items = Array.isArray(data[key])
+    ? [...(data[key] as DataRecord[])]
+    : [];
+  const position = Number(index);
+  if (!items[position]) return data;
+  items[position] = { ...items[position], [cell]: value };
+  return { ...data, [key]: items };
+}
+
 function loadState(): StudioState {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
@@ -65,7 +98,9 @@ function loadState(): StudioState {
       ...saved,
       brand: { ...DEFAULT_STATE.brand, ...saved.brand },
       data: saved.data ?? {},
-      exportIds: Array.isArray(saved.exportIds) ? saved.exportIds : DEFAULT_STATE.exportIds,
+      exportIds: Array.isArray(saved.exportIds)
+        ? saved.exportIds
+        : DEFAULT_STATE.exportIds,
     };
   } catch {
     return DEFAULT_STATE;
@@ -73,7 +108,13 @@ function loadState(): StudioState {
 }
 
 /** Scales the full-size card down to fit its container. */
-function Preview({ format, children }: { format: Format; children: React.ReactNode }) {
+function Preview({
+  format,
+  children,
+}: {
+  format: Format;
+  children: React.ReactNode;
+}) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [scale, setScale] = useState(0.3);
 
@@ -81,7 +122,12 @@ function Preview({ format, children }: { format: Format; children: React.ReactNo
     const container = containerRef.current;
     if (!container) return;
     const measure = () =>
-      setScale(Math.min(container.clientWidth / format.width, container.clientHeight / format.height));
+      setScale(
+        Math.min(
+          container.clientWidth / format.width,
+          container.clientHeight / format.height,
+        ),
+      );
     measure();
     const observer = new ResizeObserver(measure);
     observer.observe(container);
@@ -89,12 +135,18 @@ function Preview({ format, children }: { format: Format; children: React.ReactNo
   }, [format.width, format.height]);
 
   return (
-    <div ref={containerRef} className="grid h-full w-full place-items-center overflow-hidden">
+    <div
+      ref={containerRef}
+      className="grid h-full w-full place-items-center overflow-hidden"
+    >
       <div
         className="relative overflow-hidden rounded-lg shadow-2xl ring-1 ring-white/10"
         style={{ width: format.width * scale, height: format.height * scale }}
       >
-        <div className="absolute top-0 left-0 origin-top-left" style={{ transform: `scale(${scale})` }}>
+        <div
+          className="absolute top-0 left-0 origin-top-left"
+          style={{ transform: `scale(${scale})` }}
+        >
           {children}
         </div>
       </div>
@@ -106,7 +158,9 @@ export function Studio() {
   const [state, setState] = useState<StudioState>(loadState);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
-  const exportRefs = useRef<Partial<Record<FormatId, HTMLDivElement | null>>>({});
+  const exportRefs = useRef<Partial<Record<FormatId, HTMLDivElement | null>>>(
+    {},
+  );
 
   useEffect(() => {
     try {
@@ -116,19 +170,52 @@ export function Studio() {
     }
   }, [state]);
 
-  const template = TEMPLATES.find((t) => t.id === state.templateId) ?? TEMPLATES[0];
+  const template =
+    TEMPLATES.find((t) => t.id === state.templateId) ?? TEMPLATES[0];
   const format = getFormat(state.formatId);
   const data: DataRecord = { ...template.defaults, ...state.data[template.id] };
 
   const setData = (next: DataRecord) =>
     setState((s) => ({ ...s, data: { ...s.data, [template.id]: next } }));
-  const setBrand = (patch: Partial<Brand>) => setState((s) => ({ ...s, brand: { ...s.brand, ...patch } }));
+  const setBrand = (patch: Partial<Brand>) =>
+    setState((s) => ({ ...s, brand: { ...s.brand, ...patch } }));
+
+  // Click-or-drop image upload straight on the preview.
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const pendingPath = useRef("");
+  const templateId = template.id;
+  const templateDefaults = template.defaults;
+  const imageEditor = useMemo<ImageEditor>(() => {
+    const drop = async (path: string, file: File) => {
+      const image = await readImage(file, path.includes(".") ? 480 : 1400);
+      setState((s) => ({
+        ...s,
+        data: {
+          ...s.data,
+          [templateId]: setAtPath(
+            { ...templateDefaults, ...s.data[templateId] },
+            path,
+            image,
+          ),
+        },
+      }));
+    };
+    return {
+      drop,
+      pick: (path) => {
+        pendingPath.current = path;
+        fileInputRef.current?.click();
+      },
+    };
+  }, [templateId, templateDefaults]);
 
   const exportFormats = FORMATS.filter((f) => state.exportIds.includes(f.id));
   const toggleExport = (id: FormatId) =>
     setState((s) => ({
       ...s,
-      exportIds: s.exportIds.includes(id) ? s.exportIds.filter((x) => x !== id) : [...s.exportIds, id],
+      exportIds: s.exportIds.includes(id)
+        ? s.exportIds.filter((x) => x !== id)
+        : [...s.exportIds, id],
     }));
 
   /** One size → a PNG. Several sizes → a single zip, so one click covers Instagram and X. */
@@ -143,18 +230,29 @@ export function Studio() {
         for (const target of formats) {
           const node = exportRefs.current[target.id]?.firstElementChild;
           if (!(node instanceof HTMLElement)) continue;
-          const blob = await toBlob(node, { width: target.width, height: target.height, pixelRatio: 1 });
+          const blob = await toBlob(node, {
+            width: target.width,
+            height: target.height,
+            pixelRatio: 1,
+          });
           if (!blob) throw new Error("empty image");
           const platform = target.platform === "X" ? "x" : "instagram";
-          files.push({ name: `${template.id}-${platform}-${target.width}x${target.height}.png`, blob });
+          files.push({
+            name: `${template.id}-${platform}-${target.width}x${target.height}.png`,
+            blob,
+          });
         }
         if (files.length === 1) {
           saveFile(files[0].blob, files[0].name);
         } else {
           const entries: Record<string, Uint8Array> = {};
-          for (const file of files) entries[file.name] = new Uint8Array(await file.blob.arrayBuffer());
+          for (const file of files)
+            entries[file.name] = new Uint8Array(await file.blob.arrayBuffer());
           const zipped = zipSync(entries, { level: 0 });
-          saveFile(new Blob([zipped.slice()], { type: "application/zip" }), `${template.id}.zip`);
+          saveFile(
+            new Blob([zipped.slice()], { type: "application/zip" }),
+            `${template.id}.zip`,
+          );
         }
       } catch {
         setError("Görsel oluşturulamadı. Lütfen tekrar deneyin.");
@@ -167,6 +265,20 @@ export function Studio() {
 
   return (
     <div className="dark flex min-h-dvh flex-col bg-background text-foreground lg:h-dvh lg:flex-row">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        aria-hidden
+        tabIndex={-1}
+        className="sr-only"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file && pendingPath.current)
+            void imageEditor.drop(pendingPath.current, file);
+        }}
+      />
       {/* Preview */}
       <section className="flex min-w-0 flex-col gap-4 p-4 lg:order-2 lg:flex-1 lg:p-6">
         <div className="flex flex-wrap items-center gap-2">
@@ -175,7 +287,9 @@ export function Studio() {
               <button
                 key={f.id}
                 type="button"
-                onClick={() => setState((s) => ({ ...s, formatId: f.id, showAll: false }))}
+                onClick={() =>
+                  setState((s) => ({ ...s, formatId: f.id, showAll: false }))
+                }
                 className={cn(
                   "rounded-md px-3 py-1.5 text-left text-sm transition",
                   !state.showAll && f.id === format.id
@@ -194,7 +308,9 @@ export function Studio() {
               onClick={() => setState((s) => ({ ...s, showAll: true }))}
               className={cn(
                 "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition",
-                state.showAll ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                state.showAll
+                  ? "bg-primary text-primary-foreground"
+                  : "text-muted-foreground hover:text-foreground",
               )}
             >
               <LayoutGrid className="size-4" /> Yan yana
@@ -208,7 +324,9 @@ export function Studio() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-2">
-          <span className="px-1 text-xs text-muted-foreground">Pakete dahil:</span>
+          <span className="px-1 text-xs text-muted-foreground">
+            Pakete dahil:
+          </span>
           {FORMATS.map((f) => {
             const active = state.exportIds.includes(f.id);
             return (
@@ -219,7 +337,9 @@ export function Studio() {
                 onClick={() => toggleExport(f.id)}
                 className={cn(
                   "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition",
-                  active ? "border-primary bg-accent text-foreground" : "border-border text-muted-foreground",
+                  active
+                    ? "border-primary bg-accent text-foreground"
+                    : "border-border text-muted-foreground",
                 )}
               >
                 <Check className={cn("size-3", !active && "opacity-0")} />
@@ -244,70 +364,102 @@ export function Studio() {
               onClick={() => download(exportFormats)}
               className="flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
             >
-              {busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+              {busy ? (
+                <Loader2 className="size-4 animate-spin" />
+              ) : (
+                <Download className="size-4" />
+              )}
               Paketi indir ({exportFormats.length})
             </button>
           </div>
         </div>
-        {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-        {state.showAll ? (
-          <div
-            className={cn(
-              "grid h-[80vh] min-h-0 gap-4 lg:h-auto lg:flex-1",
-              exportFormats.length > 1 ? "grid-cols-2" : "grid-cols-1",
-              exportFormats.length > 2 ? "grid-rows-2" : "grid-rows-1",
-            )}
-          >
-            {exportFormats.length === 0 ? (
-              <p className="text-sm text-muted-foreground">Pakete en az bir boyut ekleyin.</p>
-            ) : null}
-            {exportFormats.map((f) => (
-              <div key={f.id} className="flex min-h-0 min-w-0 flex-col gap-2">
-                <p className="text-xs text-muted-foreground">
-                  {f.platform} {f.label} · {f.width} × {f.height}
+        {error ? (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        ) : null}
+        <EditContext.Provider value={imageEditor}>
+          {state.showAll ? (
+            <div
+              className={cn(
+                "grid h-[80vh] min-h-0 gap-4 lg:h-auto lg:flex-1",
+                exportFormats.length > 1 ? "grid-cols-2" : "grid-cols-1",
+                exportFormats.length > 2 ? "grid-rows-2" : "grid-rows-1",
+              )}
+            >
+              {exportFormats.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  Pakete en az bir boyut ekleyin.
                 </p>
-                <div className="min-h-0 flex-1">
-                  <Preview format={f}>{template.render({ data, format: f, brand: state.brand })}</Preview>
+              ) : null}
+              {exportFormats.map((f) => (
+                <div key={f.id} className="flex min-h-0 min-w-0 flex-col gap-2">
+                  <p className="text-xs text-muted-foreground">
+                    {f.platform} {f.label} · {f.width} × {f.height}
+                  </p>
+                  <div className="min-h-0 flex-1">
+                    <Preview format={f}>
+                      {template.render({ data, format: f, brand: state.brand })}
+                    </Preview>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        ) : (
-          <div className="h-[62vh] min-h-0 lg:h-auto lg:flex-1">
-            <Preview format={format}>{template.render({ data, format, brand: state.brand })}</Preview>
-          </div>
-        )}
+              ))}
+            </div>
+          ) : (
+            <div className="h-[62vh] min-h-0 lg:h-auto lg:flex-1">
+              <Preview format={format}>
+                {template.render({ data, format, brand: state.brand })}
+              </Preview>
+            </div>
+          )}
+        </EditContext.Provider>
+        <p className="text-xs text-muted-foreground">
+          İpucu: önizlemedeki fotoğraf, logo ve ekran görüntüsü alanlarına
+          tıklayarak ya da dosyayı üstüne sürükleyerek görsel yükleyebilirsin.
+        </p>
       </section>
 
       {/* Controls */}
       <aside className="flex w-full shrink-0 flex-col border-border lg:order-1 lg:w-[440px] lg:border-r">
         <div className="border-b border-border p-4">
           <h1 className="text-base font-semibold">FM Paylaşım Stüdyosu</h1>
-          <p className="text-xs text-muted-foreground">Şablonu seç, içeriği düzenle, PNG olarak indir.</p>
+          <p className="text-xs text-muted-foreground">
+            Şablonu seç, içeriği düzenle, PNG olarak indir.
+          </p>
         </div>
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-4">
           <div>
-            <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Şablon</h2>
+            <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              Şablon
+            </h2>
             <div className="space-y-3">
               {CATEGORIES.map((category) => (
                 <div key={category}>
-                  <p className="mb-1.5 text-xs text-muted-foreground">{category}</p>
+                  <p className="mb-1.5 text-xs text-muted-foreground">
+                    {category}
+                  </p>
                   <div className="grid grid-cols-2 gap-1.5">
-                    {TEMPLATES.filter((t) => t.category === category).map((t) => (
-                      <button
-                        key={t.id}
-                        type="button"
-                        title={t.description}
-                        onClick={() => setState((s) => ({ ...s, templateId: t.id }))}
-                        className={cn(
-                          "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm font-medium transition",
-                          t.id === template.id ? "border-primary bg-accent" : "border-border hover:bg-accent/50",
-                        )}
-                      >
-                        <t.icon className="size-4 shrink-0" />
-                        <span className="truncate">{t.name}</span>
-                      </button>
-                    ))}
+                    {TEMPLATES.filter((t) => t.category === category).map(
+                      (t) => (
+                        <button
+                          key={t.id}
+                          type="button"
+                          title={t.description}
+                          onClick={() =>
+                            setState((s) => ({ ...s, templateId: t.id }))
+                          }
+                          className={cn(
+                            "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm font-medium transition",
+                            t.id === template.id
+                              ? "border-primary bg-accent"
+                              : "border-border hover:bg-accent/50",
+                          )}
+                        >
+                          <t.icon className="size-4 shrink-0" />
+                          <span className="truncate">{t.name}</span>
+                        </button>
+                      ),
+                    )}
                   </div>
                 </div>
               ))}
@@ -315,18 +467,24 @@ export function Studio() {
           </div>
 
           <div>
-            <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Renk paleti</h2>
+            <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              Renk paleti
+            </h2>
             <div className="mb-3 grid grid-cols-3 gap-2">
               {THEMES.map((theme) => (
                 <button
                   key={theme.id}
                   type="button"
                   aria-pressed={theme.id === state.brand.theme}
-                  onClick={() => setBrand({ theme: theme.id, ...theme.palette })}
+                  onClick={() =>
+                    setBrand({ theme: theme.id, ...theme.palette })
+                  }
                   className={cn(
                     "flex h-10 items-center justify-center rounded-lg border text-xs font-semibold transition",
                     theme.swatchClass,
-                    theme.id === state.brand.theme ? "border-foreground ring-2 ring-foreground/40" : "border-border",
+                    theme.id === state.brand.theme
+                      ? "border-foreground ring-2 ring-foreground/40"
+                      : "border-border",
                   )}
                 >
                   {theme.label}
@@ -338,7 +496,9 @@ export function Studio() {
                 onClick={() => setBrand({ theme: "custom" })}
                 className={cn(
                   "flex h-10 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold transition",
-                  state.brand.theme === "custom" ? "border-foreground ring-2 ring-foreground/40" : "border-border",
+                  state.brand.theme === "custom"
+                    ? "border-foreground ring-2 ring-foreground/40"
+                    : "border-border",
                 )}
               >
                 <Palette className="size-3.5" /> Özel
@@ -357,20 +517,37 @@ export function Studio() {
               />
             ) : (
               <p className="text-xs text-muted-foreground">
-                Kendi renklerin için &quot;Özel&quot;e bas; seçili paletten başlar.
+                Kendi renklerin için &quot;Özel&quot;e bas; seçili paletten
+                başlar.
               </p>
             )}
           </div>
 
           <div>
-            <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Yazı tipi ve marka</h2>
+            <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+              Yazı tipi ve marka
+            </h2>
             <AutoForm
               fields={[
-                { key: "headingFont", label: "Başlık yazı tipi", type: "select", options: HEADING_FONTS },
-                { key: "bodyFont", label: "Metin yazı tipi", type: "select", options: BODY_FONTS },
+                {
+                  key: "headingFont",
+                  label: "Başlık yazı tipi",
+                  type: "select",
+                  options: HEADING_FONTS,
+                },
+                {
+                  key: "bodyFont",
+                  label: "Metin yazı tipi",
+                  type: "select",
+                  options: BODY_FONTS,
+                },
                 { key: "name", label: "Hesap adı", type: "text" },
                 { key: "handle", label: "Kullanıcı adı", type: "text" },
-                { key: "link", label: "Kanal adresi (her kartta)", type: "text" },
+                {
+                  key: "link",
+                  label: "Kanal adresi (her kartta)",
+                  type: "text",
+                },
                 { key: "footnote", label: "Alt bilgi (sağ alt)", type: "text" },
                 {
                   key: "backgroundDim",
@@ -383,7 +560,12 @@ export function Studio() {
                   ],
                 },
                 { key: "logo", label: "Logo (sol üst)", type: "image" },
-                { key: "background", label: "Arka plan görseli", type: "image", hint: "Tüm kartın arkasına yerleşir; okunurluk için karartılır." },
+                {
+                  key: "background",
+                  label: "Arka plan görseli",
+                  type: "image",
+                  hint: "Tüm kartın arkasına yerleşir; okunurluk için karartılır.",
+                },
               ]}
               value={state.brand}
               onChange={(next) => setBrand(next as Partial<Brand>)}
@@ -392,7 +574,9 @@ export function Studio() {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">İçerik</h2>
+              <h2 className="text-xs font-semibold tracking-wider text-muted-foreground uppercase">
+                İçerik
+              </h2>
               <button
                 type="button"
                 onClick={() => setData(template.defaults)}
@@ -401,13 +585,21 @@ export function Studio() {
                 <RotateCcw className="size-3" /> Örnek veriye dön
               </button>
             </div>
-            <AutoForm key={template.id} fields={template.fields} value={data} onChange={setData} />
+            <AutoForm
+              key={template.id}
+              fields={template.fields}
+              value={data}
+              onChange={setData}
+            />
           </div>
         </div>
       </aside>
 
       {/* Full-size copies used for export, kept off-screen. */}
-      <div aria-hidden className="pointer-events-none fixed top-0 left-[-20000px]">
+      <div
+        aria-hidden
+        className="pointer-events-none fixed top-0 left-[-20000px]"
+      >
         {FORMATS.map((f) => (
           <div
             key={f.id}

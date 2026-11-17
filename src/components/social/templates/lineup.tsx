@@ -1,10 +1,10 @@
 import { ClipboardList, Globe, Shirt } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
-import { CardFrame, Flag, Label, Panel } from "../frame";
+import { Avatar, CardFrame, Flag, Label, Panel } from "../frame";
 import type { Field, Layout, TemplateProps } from "../types";
 
-type LineupPlayer = { name: string; number: string; nation: string; rating: string };
+type LineupPlayer = { name: string; number: string; nation: string; rating: string; photo: string };
 
 type LineupData = {
   tag: string;
@@ -91,6 +91,7 @@ function Pitch({ data, layout }: { data: LineupData; layout: Layout }) {
   const spots = formationSpots(data.formation);
   const size = MARKER[layout];
   const flagDots = data.markerStyle === "flag";
+  const faceDots = data.markerStyle === "photo";
   return (
     <div
       className={cn(
@@ -112,7 +113,13 @@ function Pitch({ data, layout }: { data: LineupData; layout: Layout }) {
             style={position}
           >
             <span className="relative">
-              {flagDots && player.nation ? (
+              {faceDots ? (
+                <Avatar
+                  src={player.photo}
+                  path={`players.${i}.photo`}
+                  className={cn("shadow-[0_8px_24px_rgb(0_0_0/0.35)] ring-4 ring-fm-accent", size.dot)}
+                />
+              ) : flagDots && player.nation ? (
                 <span
                   className={cn(
                     "block overflow-hidden rounded-full shadow-[0_8px_24px_rgb(0_0_0/0.35)] ring-4 ring-fm-accent",
@@ -248,6 +255,7 @@ const fields: Field[] = [
     options: [
       { value: "number", label: "Numara / rol" },
       { value: "flag", label: "Ülke bayrağı" },
+      { value: "photo", label: "Oyuncu yüzü" },
     ],
   },
   { key: "coachLabel", label: "Sağ alt başlık", type: "text" },
@@ -257,8 +265,9 @@ const fields: Field[] = [
     label: "Oyuncular",
     type: "list",
     itemLabel: "Oyuncu",
-    hint: "Sıra: kaleci, sonra her hat soldan sağa. İlk kutu forma numarası ya da rol kısaltması.",
+    hint: "Sıra: kaleci, sonra her hat soldan sağa. Simge \"Oyuncu yüzü\" iken önizlemede oyuncuya tıklayarak da yüz yükleyebilirsin.",
     fields: [
+      { key: "photo", label: "Oyuncu yüzü", type: "image" },
       { key: "number", label: "No", type: "text", size: "xs" },
       { key: "name", label: "İsim", type: "text", size: "grow" },
       { key: "nation", label: "Ülke", type: "country", size: "md" },
@@ -269,7 +278,7 @@ const fields: Field[] = [
   { key: "bench", label: "Alt liste", type: "lines", hint: "Her satır bir madde" },
 ];
 
-const player = (number: string, name: string, nation = "", rating = ""): LineupPlayer => ({ number, name, nation, rating });
+const player = (number: string, name: string, nation = "", rating = ""): LineupPlayer => ({ number, name, nation, rating, photo: "" });
 
 export const lineup = defineTemplate<LineupData>({
   id: "lineup",

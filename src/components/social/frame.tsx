@@ -1,7 +1,8 @@
 /* eslint-disable @next/next/no-img-element -- cards are rasterised client-side; next/image would break export */
-import { Play, Star, User } from "lucide-react";
+import { MonitorUp, Play, Star, User } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { UploadTarget, useImageEditor } from "./edit-context";
 import { DIM_CLASS, FRAME_CLASS, luminance } from "./formats";
 import type { Brand, Format, Layout } from "./types";
 
@@ -121,10 +122,11 @@ export function Stars({ value, className }: { value: number; className?: string 
   );
 }
 
-/** Uploaded picture, or a neutral placeholder when empty. */
-export function Photo({ src, alt, className }: { src: string; alt: string; className?: string }) {
+/** Uploaded picture, or a neutral placeholder when empty. `path` makes it clickable in the preview. */
+export function Photo({ src, alt, path, className }: { src: string; alt: string; path?: string; className?: string }) {
   return (
-    <div
+    <UploadTarget
+      path={path}
       className={cn(
         "relative shrink-0 overflow-hidden rounded-[28px] border border-fm-line bg-fm-surface",
         className,
@@ -136,14 +138,31 @@ export function Photo({ src, alt, className }: { src: string; alt: string; class
       ) : (
         <User className="absolute inset-x-0 bottom-[-8%] mx-auto size-[78%] text-fm-line" strokeWidth={1} />
       )}
-    </div>
+    </UploadTarget>
+  );
+}
+
+/** Round face picture for small spots (pitch markers, list rows). */
+export function Avatar({ src, path, className }: { src: string | undefined; path?: string; className?: string }) {
+  return (
+    <UploadTarget
+      path={path}
+      hintClass="text-[14px]"
+      className={cn("relative block shrink-0 overflow-hidden rounded-full bg-fm-surface", className)}
+    >
+      {src ? (
+        <img src={src} alt="" className="size-full object-cover object-top" />
+      ) : (
+        <User className="absolute inset-x-0 bottom-[-12%] mx-auto size-[82%] text-fm-muted" strokeWidth={1.25} />
+      )}
+    </UploadTarget>
   );
 }
 
 /** Club badge: uploaded logo or a monogram. */
-export function Crest({ src, code, className }: { src: string; code: string; className?: string }) {
+export function Crest({ src, code, path, className }: { src: string; code: string; path?: string; className?: string }) {
   return (
-    <div className={cn("grid shrink-0 place-items-center", className)}>
+    <UploadTarget path={path} hintClass="text-[16px]" className={cn("relative grid shrink-0 place-items-center rounded-full", className)}>
       {src ? (
         <img src={src} alt={code} className="size-full object-contain" />
       ) : (
@@ -151,7 +170,31 @@ export function Crest({ src, code, className }: { src: string; code: string; cla
           {code}
         </span>
       )}
-    </div>
+    </UploadTarget>
+  );
+}
+
+/** Framed game screenshot (e.g. the FM player profile screen), shown uncropped. */
+export function Screenshot({ src, path, className }: { src: string; path?: string; className?: string }) {
+  const editing = useImageEditor() !== null;
+  return (
+    <UploadTarget
+      path={path}
+      hintClass="text-[30px]"
+      className={cn(
+        "relative min-h-0 overflow-hidden rounded-[28px] border border-fm-line bg-fm-surface",
+        className,
+      )}
+    >
+      {src ? (
+        <img src={src} alt="" className="absolute inset-0 size-full object-contain" />
+      ) : (
+        <div className="absolute inset-0 grid place-content-center justify-items-center gap-4 text-fm-muted">
+          <MonitorUp className="size-[72px]" strokeWidth={1.25} />
+          {editing ? <span className="text-[24px]">FM profil ekran görüntüsünü buraya yükle</span> : null}
+        </div>
+      )}
+    </UploadTarget>
   );
 }
 

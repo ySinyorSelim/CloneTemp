@@ -102,7 +102,7 @@ function ProfileCard({ data, format, brand }: TemplateProps<ProfileData>) {
       <CardFrame format={format} brand={brand} tag={data.tag}>
         <div className="flex min-h-0 flex-1 gap-10">
           <div className="flex w-[430px] shrink-0 flex-col justify-between gap-5">
-            <Photo src={data.photo} alt={data.name} className="min-h-0 w-full flex-1" />
+            <Photo src={data.photo} alt={data.name} path="photo" className="min-h-0 w-full flex-1" />
             {identity}
             {price}
           </div>
@@ -123,6 +123,7 @@ function ProfileCard({ data, format, brand }: TemplateProps<ProfileData>) {
           <Photo
             src={data.photo}
             alt={data.name}
+            path="photo"
             className={layout === "story" ? "h-[380px] w-[320px]" : "h-[300px] w-[270px]"}
           />
           <div className="flex min-w-0 flex-1 flex-col justify-between py-1">

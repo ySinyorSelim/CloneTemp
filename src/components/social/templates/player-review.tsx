@@ -1,7 +1,7 @@
 import { Minus, Plus, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
-import { AttributeRows, CardFrame, Flag, Label, Panel, Photo, Stars, nameSize } from "../frame";
+import { AttributeRows, CardFrame, Flag, Label, Panel, Photo, Screenshot, Stars, nameSize } from "../frame";
 import type { Attribute } from "../frame";
 import type { Layout, TemplateProps } from "../types";
 
@@ -11,6 +11,7 @@ type PlayerReviewData = {
   club: string;
   position: string;
   photo: string;
+  profileShot: string;
   age: string;
   nation: string;
   nationality: string;
@@ -102,7 +103,9 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
     </div>
   );
 
-  const attributes = (
+  const attributes = data.profileShot ? (
+    <Screenshot src={data.profileShot} path="profileShot" className="min-h-[300px] flex-1" />
+  ) : (
     <div className="flex gap-4">
       <AttributeGroup title="Teknik" items={data.technical} rows={rows} />
       <AttributeGroup title="Zihinsel" items={data.mental} rows={rows} />
@@ -123,7 +126,7 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
         <div className="flex min-h-0 flex-1 gap-10">
           <div className="flex w-[430px] shrink-0 flex-col justify-between">
             <div className="flex gap-5">
-              <Photo src={data.photo} alt={data.name} className="h-[230px] w-[200px]" />
+              <Photo src={data.photo} alt={data.name} path="photo" className="h-[230px] w-[200px]" />
               <div className="flex flex-col justify-between">
                 <RatingBadge rating={data.rating} />
                 <div className="space-y-3">
@@ -164,6 +167,7 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
           <Photo
             src={data.photo}
             alt={data.name}
+            path="photo"
             className={layout === "story" ? "h-[380px] w-[320px]" : "h-[300px] w-[270px]"}
           />
           <div className="flex min-w-0 flex-1 flex-col justify-between py-1">
@@ -192,7 +196,7 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
 
         {attributes}
 
-        {layout !== "square" ? prosCons : null}
+        {layout === "story" || (layout === "portrait" && !data.profileShot) ? prosCons : null}
 
         {layout !== "square" ? (
           <p
@@ -226,7 +230,13 @@ export const playerReview = defineTemplate<PlayerReviewData>({
     { key: "name", label: "Oyuncu adı", type: "text" },
     { key: "club", label: "Kulüp", type: "text" },
     { key: "position", label: "Mevki", type: "text" },
-    { key: "photo", label: "Oyuncu fotoğrafı", type: "image" },
+    { key: "photo", label: "Oyuncu yüzü", type: "image" },
+    {
+      key: "profileShot",
+      label: "FM profil ekran görüntüsü",
+      type: "image",
+      hint: "Yüklersen özellik tablolarının yerine bu görüntü gelir.",
+    },
     { key: "age", label: "Yaş", type: "text" },
     { key: "nation", label: "Bayrak", type: "country" },
     { key: "nationality", label: "Uyruk (yazı)", type: "text" },
@@ -249,6 +259,7 @@ export const playerReview = defineTemplate<PlayerReviewData>({
     club: "Göztepe · Süper Lig",
     position: "OOS (M)",
     photo: "",
+    profileShot: "",
     age: "19",
     nation: "tr",
     nationality: "Türkiye",

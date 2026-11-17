@@ -1,10 +1,10 @@
 import { Goal, ListOrdered, Sprout } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
-import { CardFrame, Flag, chunk } from "../frame";
+import { Avatar, CardFrame, Flag, chunk } from "../frame";
 import type { Layout, TemplateProps } from "../types";
 
-type ListItem = { name: string; nation: string; detail: string; value: string };
+type ListItem = { name: string; nation: string; detail: string; value: string; photo: string };
 
 type TopListData = {
   tag: string;
@@ -59,6 +59,7 @@ function TopListCard({ data, format, brand }: TemplateProps<TopListData>) {
                     >
                       {String(rank).padStart(2, "0")}
                     </span>
+                    {item.photo ? <Avatar src={item.photo} className="size-[2.1em] ring-2 ring-fm-line" /> : null}
                     <span className="min-w-0 flex-1">
                       <span className="flex items-center gap-[0.4em] leading-[1.15] font-semibold">
                         <Flag code={item.nation} className="h-[0.7em]" />
@@ -103,6 +104,7 @@ export const topList = defineTemplate<TopListData>({
       type: "list",
       itemLabel: "Madde",
       fields: [
+        { key: "photo", label: "Yüz / logo", type: "image" },
         { key: "nation", label: "Ülke", type: "country", size: "md" },
         { key: "name", label: "İsim", type: "text", size: "grow" },
         { key: "detail", label: "Detay", type: "text", size: "grow" },
@@ -116,16 +118,16 @@ export const topList = defineTemplate<TopListData>({
     subtitle: "21 yaş altı · Orta saha ve hücum",
     valueLabel: "Bonservis",
     items: [
-      { name: "Kerem Aydın", nation: "tr", detail: "Göztepe · OOS (M) · 19", value: "€14.5M" },
-      { name: "Mateo Ferreyra", nation: "ar", detail: "Vélez · FV (M) · 18", value: "€9M" },
-      { name: "Lucas Brandt", nation: "de", detail: "Freiburg · OS (M) · 20", value: "€22M" },
-      { name: "Ibrahima Sané", nation: "sn", detail: "Metz · OK (SĞ) · 18", value: "€6.5M" },
-      { name: "Tiago Varela", nation: "pt", detail: "Braga · SF (M) · 19", value: "€11M" },
-      { name: "Emre Soylu", nation: "tr", detail: "Altınordu · DOS · 17", value: "€2.8M" },
-      { name: "Nils Åkesson", nation: "se", detail: "Malmö · OK (SL) · 19", value: "€4M" },
-      { name: "Javi Morales", nation: "es", detail: "Betis · OS (M) · 20", value: "€18M" },
-      { name: "Kofi Mensah", nation: "gh", detail: "Nordsjælland · SF (M) · 18", value: "€5.5M" },
-      { name: "Dario Kovač", nation: "hr", detail: "Dinamo Zagreb · OOS (M) · 19", value: "€8M" },
+      { name: "Kerem Aydın", nation: "tr", photo: "", detail: "Göztepe · OOS (M) · 19", value: "€14.5M" },
+      { name: "Mateo Ferreyra", nation: "ar", photo: "", detail: "Vélez · FV (M) · 18", value: "€9M" },
+      { name: "Lucas Brandt", nation: "de", photo: "", detail: "Freiburg · OS (M) · 20", value: "€22M" },
+      { name: "Ibrahima Sané", nation: "sn", photo: "", detail: "Metz · OK (SĞ) · 18", value: "€6.5M" },
+      { name: "Tiago Varela", nation: "pt", photo: "", detail: "Braga · SF (M) · 19", value: "€11M" },
+      { name: "Emre Soylu", nation: "tr", photo: "", detail: "Altınordu · DOS · 17", value: "€2.8M" },
+      { name: "Nils Åkesson", nation: "se", photo: "", detail: "Malmö · OK (SL) · 19", value: "€4M" },
+      { name: "Javi Morales", nation: "es", photo: "", detail: "Betis · OS (M) · 20", value: "€18M" },
+      { name: "Kofi Mensah", nation: "gh", photo: "", detail: "Nordsjælland · SF (M) · 18", value: "€5.5M" },
+      { name: "Dario Kovač", nation: "hr", photo: "", detail: "Dinamo Zagreb · OOS (M) · 19", value: "€8M" },
     ],
   },
 });
@@ -144,14 +146,14 @@ export const topScorers = defineTemplate<TopListData>({
     subtitle: "Süper Lig · 12. hafta sonu",
     valueLabel: "Gol",
     items: [
-      { name: "Kahveci", nation: "tr", detail: "Göztepe · 12 maç", value: "11" },
-      { name: "Okafor", nation: "ng", detail: "Galatasaray · 11 maç", value: "10" },
-      { name: "Silva", nation: "br", detail: "Fenerbahçe · 12 maç", value: "9" },
-      { name: "Kerem Aydın", nation: "tr", detail: "Göztepe · 12 maç", value: "8" },
-      { name: "Rossi", nation: "it", detail: "Beşiktaş · 10 maç", value: "7" },
-      { name: "Dubois", nation: "fr", detail: "Trabzonspor · 12 maç", value: "7" },
-      { name: "Tanaka", nation: "jp", detail: "Samsunspor · 11 maç", value: "6" },
-      { name: "De Vries", nation: "nl", detail: "Başakşehir · 12 maç", value: "6" },
+      { name: "Kahveci", nation: "tr", photo: "", detail: "Göztepe · 12 maç", value: "11" },
+      { name: "Okafor", nation: "ng", photo: "", detail: "Galatasaray · 11 maç", value: "10" },
+      { name: "Silva", nation: "br", photo: "", detail: "Fenerbahçe · 12 maç", value: "9" },
+      { name: "Kerem Aydın", nation: "tr", photo: "", detail: "Göztepe · 12 maç", value: "8" },
+      { name: "Rossi", nation: "it", photo: "", detail: "Beşiktaş · 10 maç", value: "7" },
+      { name: "Dubois", nation: "fr", photo: "", detail: "Trabzonspor · 12 maç", value: "7" },
+      { name: "Tanaka", nation: "jp", photo: "", detail: "Samsunspor · 11 maç", value: "6" },
+      { name: "De Vries", nation: "nl", photo: "", detail: "Başakşehir · 12 maç", value: "6" },
     ],
   },
 });
@@ -170,12 +172,12 @@ export const youthIntake = defineTemplate<TopListData>({
     subtitle: "Altyapı sorumlusu: \"Altın jenerasyon\"",
     valueLabel: "Potansiyel",
     items: [
-      { name: "Emre Soylu", nation: "tr", detail: "DOS · 15 yaş · Model vatandaş", value: "★★★★★" },
-      { name: "Barış Tekin", nation: "tr", detail: "STP · 16 yaş · Kararlı", value: "★★★★½" },
-      { name: "Deniz Uçar", nation: "tr", detail: "OK (SL) · 15 yaş · Hırslı", value: "★★★★" },
-      { name: "Yusuf Kara", nation: "de", detail: "SF · 16 yaş · Dengeli", value: "★★★½" },
-      { name: "Ali Öztürk", nation: "tr", detail: "KL · 15 yaş · Profesyonel", value: "★★★½" },
-      { name: "Mert Arslan", nation: "tr", detail: "OOS · 16 yaş · Dengeli", value: "★★★" },
+      { name: "Emre Soylu", nation: "tr", photo: "", detail: "DOS · 15 yaş · Model vatandaş", value: "★★★★★" },
+      { name: "Barış Tekin", nation: "tr", photo: "", detail: "STP · 16 yaş · Kararlı", value: "★★★★½" },
+      { name: "Deniz Uçar", nation: "tr", photo: "", detail: "OK (SL) · 15 yaş · Hırslı", value: "★★★★" },
+      { name: "Yusuf Kara", nation: "de", photo: "", detail: "SF · 16 yaş · Dengeli", value: "★★★½" },
+      { name: "Ali Öztürk", nation: "tr", photo: "", detail: "KL · 15 yaş · Profesyonel", value: "★★★½" },
+      { name: "Mert Arslan", nation: "tr", photo: "", detail: "OOS · 16 yaş · Dengeli", value: "★★★" },
     ],
   },
 });

@@ -27,10 +27,10 @@ type MatchResultData = {
 
 const STAT_ROWS: Record<Layout, number> = { portrait: 5, square: 4, story: 6, wide: 6 };
 
-function Team({ name, code, logo, crestClass }: { name: string; code: string; logo: string; crestClass: string }) {
+function Team({ name, code, logo, path, crestClass }: { name: string; code: string; logo: string; path: string; crestClass: string }) {
   return (
     <div className="flex min-w-0 flex-col items-center gap-4">
-      <Crest src={logo} code={code} className={crestClass} />
+      <Crest src={logo} code={code} path={path} className={crestClass} />
       <span className="max-w-full truncate text-[30px] font-semibold">{name}</span>
     </div>
   );
@@ -102,7 +102,7 @@ function MatchResultCard({ data, format, brand }: TemplateProps<MatchResultData>
         <p className="mt-2 text-[23px] text-fm-muted">{data.info}</p>
       </div>
       <div className={cn("grid grid-cols-[1fr_auto_1fr] items-center gap-4", wide || layout === "square" ? "mt-6" : "mt-9")}>
-        <Team name={data.homeName} code={data.homeCode} logo={data.homeLogo} crestClass={crestClass} />
+        <Team name={data.homeName} code={data.homeCode} logo={data.homeLogo} path="homeLogo" crestClass={crestClass} />
         <div
           className={cn(
             "fm-display flex items-center gap-5 tracking-normal tabular-nums",
@@ -113,7 +113,7 @@ function MatchResultCard({ data, format, brand }: TemplateProps<MatchResultData>
           <span className="h-[10px] w-[36px] rounded-full bg-fm-accent" />
           <span>{data.awayScore}</span>
         </div>
-        <Team name={data.awayName} code={data.awayCode} logo={data.awayLogo} crestClass={crestClass} />
+        <Team name={data.awayName} code={data.awayCode} logo={data.awayLogo} path="awayLogo" crestClass={crestClass} />
       </div>
       <div className="mt-6 grid grid-cols-2 gap-10">
         <Scorers items={data.homeScorers} />

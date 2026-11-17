@@ -23,10 +23,10 @@ type ComparisonData = {
 
 const ROWS: Record<Layout, number> = { portrait: 9, square: 7, story: 12, wide: 8 };
 
-function Side({ name, nation, info, photo, photoClass }: { name: string; nation: string; info: string; photo: string; photoClass: string }) {
+function Side({ name, nation, info, photo, path, photoClass }: { name: string; nation: string; info: string; photo: string; path: string; photoClass: string }) {
   return (
     <div className="flex min-w-0 flex-1 flex-col items-center text-center">
-      <Photo src={photo} alt={name} className={photoClass} />
+      <Photo src={photo} alt={name} path={path} className={photoClass} />
       <h2 className="fm-display mt-5 max-w-full truncate text-[34px]">{name}</h2>
       <p className="mt-2 flex max-w-full items-center gap-2.5 text-[22px] text-fm-muted">
         <Flag code={nation} className="h-[0.8em]" />
@@ -78,7 +78,7 @@ function ComparisonCard({ data, format, brand }: TemplateProps<ComparisonData>) 
       <CardFrame format={format} brand={brand} tag={data.tag}>
         <div className="flex min-h-0 flex-1 items-center gap-8">
           <div className="w-[300px] shrink-0">
-            <Side name={data.aName} nation={data.aNation} info={data.aInfo} photo={data.aPhoto} photoClass="h-[300px] w-[260px]" />
+            <Side name={data.aName} nation={data.aNation} info={data.aInfo} photo={data.aPhoto} path="aPhoto" photoClass="h-[300px] w-[260px]" />
           </div>
           <div className="flex h-full min-w-0 flex-1 flex-col gap-4">
             <h1 className="fm-display text-center text-[36px]">{data.title}</h1>
@@ -86,7 +86,7 @@ function ComparisonCard({ data, format, brand }: TemplateProps<ComparisonData>) 
             {verdict}
           </div>
           <div className="w-[300px] shrink-0">
-            <Side name={data.bName} nation={data.bNation} info={data.bInfo} photo={data.bPhoto} photoClass="h-[300px] w-[260px]" />
+            <Side name={data.bName} nation={data.bNation} info={data.bInfo} photo={data.bPhoto} path="bPhoto" photoClass="h-[300px] w-[260px]" />
           </div>
         </div>
       </CardFrame>
@@ -99,9 +99,9 @@ function ComparisonCard({ data, format, brand }: TemplateProps<ComparisonData>) 
       <div className="flex min-h-0 flex-1 flex-col gap-5">
         <h1 className={cn("fm-display text-center", layout === "square" ? "text-[40px]" : "text-[48px]")}>{data.title}</h1>
         <div className="flex items-center gap-4">
-          <Side name={data.aName} nation={data.aNation} info={data.aInfo} photo={data.aPhoto} photoClass={photoClass} />
+          <Side name={data.aName} nation={data.aNation} info={data.aInfo} photo={data.aPhoto} path="aPhoto" photoClass={photoClass} />
           <span className="fm-display shrink-0 text-[44px] tracking-normal text-fm-accent">VS</span>
-          <Side name={data.bName} nation={data.bNation} info={data.bInfo} photo={data.bPhoto} photoClass={photoClass} />
+          <Side name={data.bName} nation={data.bNation} info={data.bInfo} photo={data.bPhoto} path="bPhoto" photoClass={photoClass} />
         </div>
         {rows}
         {layout !== "square" ? verdict : null}

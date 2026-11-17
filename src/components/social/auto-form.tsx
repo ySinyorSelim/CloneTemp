@@ -16,7 +16,7 @@ const ITEM_SIZE: Record<NonNullable<ItemField["size"]>, string> = {
 };
 
 /** Downscale uploads so they stay small enough for localStorage; keeps transparency. */
-async function readImage(file: File, maxSize = 1400): Promise<string> {
+export async function readImage(file: File, maxSize = 1400): Promise<string> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
@@ -48,6 +48,33 @@ function CountrySelect({
         </option>
       ))}
     </select>
+  );
+}
+
+function ImageCell({ label, value, onChange }: { label: string; value: string; onChange: (next: string) => void }) {
+  return (
+    <label
+      title={label}
+      className="relative grid size-8 shrink-0 cursor-pointer place-items-center overflow-hidden rounded-md border border-dashed border-input text-muted-foreground hover:border-ring hover:text-foreground"
+    >
+      {value ? (
+        // eslint-disable-next-line @next/next/no-img-element -- local data URL thumbnail
+        <img src={value} alt="" className="size-full object-cover object-top" />
+      ) : (
+        <ImagePlus className="size-4" />
+      )}
+      <input
+        type="file"
+        accept="image/*"
+        aria-label={label}
+        className="sr-only"
+        onChange={async (e) => {
+          const file = e.target.files?.[0];
+          e.target.value = "";
+          if (file) onChange(await readImage(file, 480));
+        }}
+      />
+    </label>
   );
 }
 
@@ -88,6 +115,13 @@ function ListEditor({
                   value={String(item[sub.key] ?? "")}
                   onChange={(next) => update(index, sub.key, next)}
                   className={cn(INPUT, "h-8 px-1", ITEM_SIZE[sub.size ?? "md"])}
+                />
+              ) : sub.type === "image" ? (
+                <ImageCell
+                  key={sub.key}
+                  label={sub.label}
+                  value={String(item[sub.key] ?? "")}
+                  onChange={(next) => update(index, sub.key, next)}
                 />
               ) : (
               <input
