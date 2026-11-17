@@ -2,7 +2,17 @@ import { Award, BadgeCheck, Binoculars, Check, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
 import { UploadTarget } from "../edit-context";
-import { AttributeRows, CardFrame, Flag, Label, Panel, Photo, Screenshot, StarValue, nameSize } from "../frame";
+import {
+  AttributeRows,
+  CardFrame,
+  Flag,
+  Label,
+  Panel,
+  Photo,
+  Screenshot,
+  StarValue,
+  nameSize,
+} from "../frame";
 import type { Attribute } from "../frame";
 import type { Field, Layout, TemplateProps } from "../types";
 
@@ -16,6 +26,7 @@ type ProfileData = {
   role: string;
   subtitle: string;
   photo: string;
+  middle: string;
   profileShot: string;
   shotFit: string;
   priceLabel: string;
@@ -28,8 +39,18 @@ type ProfileData = {
   summary: string;
 };
 
-const ATTRIBUTE_ROWS: Record<Layout, number> = { portrait: 7, square: 6, story: 9, wide: 7 };
-const REASON_ROWS: Record<Layout, number> = { portrait: 4, square: 3, story: 5, wide: 4 };
+const ATTRIBUTE_ROWS: Record<Layout, number> = {
+  portrait: 7,
+  square: 6,
+  story: 9,
+  wide: 7,
+};
+const REASON_ROWS: Record<Layout, number> = {
+  portrait: 4,
+  square: 3,
+  story: 5,
+  wide: 4,
+};
 
 function ProfileCard({ data, format, brand }: TemplateProps<ProfileData>) {
   const layout = format.layout;
@@ -40,7 +61,9 @@ function ProfileCard({ data, format, brand }: TemplateProps<ProfileData>) {
       <span className="fm-label inline-block rounded-full bg-fm-accent px-4 py-1.5 text-[17px] text-fm-on-accent">
         {data.role}
       </span>
-      <h1 className={cn("fm-display mt-4", nameSize(data.name, layout))}>{data.name}</h1>
+      <h1 className={cn("fm-display mt-4", nameSize(data.name, layout))}>
+        {data.name}
+      </h1>
       <p className="mt-3 flex items-center gap-3 text-[27px] text-fm-muted">
         <Flag code={data.nation} className="h-[0.8em]" />
         <span className="truncate">{data.subtitle}</span>
@@ -51,7 +74,9 @@ function ProfileCard({ data, format, brand }: TemplateProps<ProfileData>) {
   const price = data.price ? (
     <div className="flex items-center justify-between gap-4 rounded-[22px] bg-fm-accent px-6 py-3 text-fm-on-accent">
       <span className="fm-label text-[16px]">{data.priceLabel}</span>
-      <span className="fm-display text-[40px] tracking-normal tabular-nums">{data.price}</span>
+      <span className="fm-display text-[40px] tracking-normal tabular-nums">
+        {data.price}
+      </span>
     </div>
   ) : null;
 
@@ -69,35 +94,55 @@ function ProfileCard({ data, format, brand }: TemplateProps<ProfileData>) {
       </Panel>
     ) : null;
 
-  const columns = data.profileShot ? (
-    <Screenshot src={data.profileShot} path="profileShot" fit={data.shotFit} className="flex-1" />
-  ) : (
-    <UploadTarget path="profileShot" dropOnly hintClass="text-[28px]" className="relative grid min-h-0 flex-1 grid-cols-2 gap-4">
-      <Panel className="flex flex-col justify-center px-6 py-4">
-        <Label className="mb-2 text-fm-accent">{data.attributesTitle}</Label>
-        <AttributeRows items={data.attributes} rows={ATTRIBUTE_ROWS[layout]} barClass="w-[90px]" />
-      </Panel>
-      <Panel className="flex flex-col justify-center px-6 py-4">
-        <Label className="mb-3 text-fm-accent">{data.reasonsTitle}</Label>
-        <ul className="space-y-3">
-          {data.reasons.slice(0, REASON_ROWS[layout]).map((reason, i) => (
-            <li key={i} className="flex items-start gap-3 text-[22px] leading-[1.3]">
-              <span className="mt-0.5 grid size-[26px] shrink-0 place-items-center rounded-full bg-fm-accent text-fm-on-accent">
-                <Check className="size-[17px]" strokeWidth={3.5} />
-              </span>
-              <span>{reason}</span>
-            </li>
-          ))}
-        </ul>
-      </Panel>
-    </UploadTarget>
-  );
+  const columns =
+    data.middle === "shot" || data.profileShot !== "" ? (
+      <Screenshot
+        src={data.profileShot}
+        path="profileShot"
+        fit={data.shotFit}
+        className="flex-1"
+      />
+    ) : (
+      <UploadTarget
+        path="profileShot"
+        dropOnly
+        hintClass="text-[28px]"
+        className="relative grid min-h-0 flex-1 grid-cols-2 gap-4"
+      >
+        <Panel className="flex flex-col justify-center px-6 py-4">
+          <Label className="mb-2 text-fm-accent">{data.attributesTitle}</Label>
+          <AttributeRows
+            items={data.attributes}
+            rows={ATTRIBUTE_ROWS[layout]}
+            barClass="w-[90px]"
+          />
+        </Panel>
+        <Panel className="flex flex-col justify-center px-6 py-4">
+          <Label className="mb-3 text-fm-accent">{data.reasonsTitle}</Label>
+          <ul className="space-y-3">
+            {data.reasons.slice(0, REASON_ROWS[layout]).map((reason, i) => (
+              <li
+                key={i}
+                className="flex items-start gap-3 text-[22px] leading-[1.3]"
+              >
+                <span className="mt-0.5 grid size-[26px] shrink-0 place-items-center rounded-full bg-fm-accent text-fm-on-accent">
+                  <Check className="size-[17px]" strokeWidth={3.5} />
+                </span>
+                <span>{reason}</span>
+              </li>
+            ))}
+          </ul>
+        </Panel>
+      </UploadTarget>
+    );
 
   const summary = data.summary ? (
     <p
       className={cn(
         "shrink-0 border-l-4 border-fm-accent pl-5 leading-[1.35]",
-        layout === "story" ? "line-clamp-4 text-[27px]" : "line-clamp-2 text-[23px]",
+        layout === "story"
+          ? "line-clamp-4 text-[27px]"
+          : "line-clamp-2 text-[23px]",
       )}
     >
       {data.summary}
@@ -109,7 +154,12 @@ function ProfileCard({ data, format, brand }: TemplateProps<ProfileData>) {
       <CardFrame format={format} brand={brand} tag={data.tag}>
         <div className="flex min-h-0 flex-1 gap-10">
           <div className="flex w-[430px] shrink-0 flex-col justify-between gap-5">
-            <Photo src={data.photo} alt={data.name} path="photo" className="min-h-0 w-full flex-1" />
+            <Photo
+              src={data.photo}
+              alt={data.name}
+              path="photo"
+              className="min-h-0 w-full flex-1"
+            />
             {identity}
             {price}
           </div>
@@ -131,7 +181,9 @@ function ProfileCard({ data, format, brand }: TemplateProps<ProfileData>) {
             src={data.photo}
             alt={data.name}
             path="photo"
-            className={layout === "story" ? "h-[380px] w-[320px]" : "h-[300px] w-[270px]"}
+            className={
+              layout === "story" ? "h-[380px] w-[320px]" : "h-[300px] w-[270px]"
+            }
           />
           <div className="flex min-w-0 flex-1 flex-col justify-between py-1">
             {identity}
@@ -154,6 +206,15 @@ const fields: Field[] = [
   { key: "subtitle", label: "Alt satır", type: "text" },
   { key: "photo", label: "Fotoğraf", type: "image" },
   {
+    key: "middle",
+    label: "Orta alan",
+    type: "select",
+    options: [
+      { value: "attributes", label: "Özellik kutuları" },
+      { value: "shot", label: "Görsel alanı (FM profili)" },
+    ],
+  },
+  {
     key: "profileShot",
     label: "FM profil ekran görüntüsü",
     type: "image",
@@ -164,8 +225,8 @@ const fields: Field[] = [
     label: "Ekran görüntüsü yerleşimi",
     type: "select",
     options: [
-    { value: "contain", label: "Tamamı görünsün" },
-    { value: "cover", label: "Alanı doldursun (kenarlar kırpılır)" },
+      { value: "contain", label: "Tamamı görünsün" },
+      { value: "cover", label: "Alanı doldursun (kenarlar kırpılır)" },
     ],
   },
   { key: "priceLabel", label: "Vurgu başlığı", type: "text" },
@@ -188,11 +249,23 @@ const fields: Field[] = [
     itemLabel: "Özellik",
     fields: [
       { key: "name", label: "Özellik", type: "text", size: "grow" },
-      { key: "value", label: "1-20", type: "number", size: "xs", min: 1, max: 20 },
+      {
+        key: "value",
+        label: "1-20",
+        type: "number",
+        size: "xs",
+        min: 1,
+        max: 20,
+      },
     ],
   },
   { key: "reasonsTitle", label: "Madde başlığı", type: "text" },
-  { key: "reasons", label: "Maddeler", type: "lines", hint: "Her satır bir madde" },
+  {
+    key: "reasons",
+    label: "Maddeler",
+    type: "lines",
+    hint: "Her satır bir madde",
+  },
   { key: "summary", label: "Özet cümle", type: "textarea" },
 ];
 
@@ -211,6 +284,7 @@ export const playerRecommendation = defineTemplate<ProfileData>({
     role: "FV (M) · Kelepir",
     subtitle: "Vélez Sarsfield · 18 yaş",
     photo: "",
+    middle: "attributes",
     profileShot: "",
     shotFit: "contain",
     priceLabel: "Bonservis",
@@ -241,7 +315,8 @@ export const playerRecommendation = defineTemplate<ProfileData>({
       "AB dışı kontenjanı tutmayan liglerde ideal",
       "Kişiliği profesyonel, gelişimi hızlı",
     ],
-    summary: "Orta bütçeli kulüpler için sezonun en iyi santrfor fırsatı. İlk transfer döneminde alın, çalışma izni bekletmeyin.",
+    summary:
+      "Orta bütçeli kulüpler için sezonun en iyi santrfor fırsatı. İlk transfer döneminde alın, çalışma izni bekletmeyin.",
   },
 });
 
@@ -260,6 +335,7 @@ export const staffRecommendation = defineTemplate<ProfileData>({
     role: "Yardımcı Antrenör",
     subtitle: "Serbest · 44 yaş",
     photo: "",
+    middle: "attributes",
     profileShot: "",
     shotFit: "contain",
     priceLabel: "Beklenen maaş",
@@ -290,7 +366,8 @@ export const staffRecommendation = defineTemplate<ProfileData>({
       "Alt lig bütçesine uygun maaş",
       "Basın toplantılarını devredebilirsiniz",
     ],
-    summary: "Kariyerin ilk günü imzalatılacak isimlerden. Yardımcı antrenör olarak 5 yıldızlı, maaşı ise 3 yıldızlı.",
+    summary:
+      "Kariyerin ilk günü imzalatılacak isimlerden. Yardımcı antrenör olarak 5 yıldızlı, maaşı ise 3 yıldızlı.",
   },
 });
 
@@ -309,6 +386,7 @@ export const award = defineTemplate<ProfileData>({
     role: "Kasım 2026",
     subtitle: "Göztepe · OOS (M)",
     photo: "",
+    middle: "attributes",
     profileShot: "",
     shotFit: "contain",
     priceLabel: "Ortalama puan",
@@ -339,7 +417,8 @@ export const award = defineTemplate<ProfileData>({
       "Takım 5 maçta 13 puan topladı",
       "Değeri bir ayda €4M arttı",
     ],
-    summary: "19 yaşında ligin en değerli oyuncusu olma yolunda. Devre arasında teklifler yağacak.",
+    summary:
+      "19 yaşında ligin en değerli oyuncusu olma yolunda. Devre arasında teklifler yağacak.",
   },
 });
 
@@ -358,6 +437,7 @@ export const scoutReport = defineTemplate<ProfileData>({
     role: "OK (SĞ) · Keşif",
     subtitle: "Metz · 18 yaş",
     photo: "",
+    middle: "attributes",
     profileShot: "",
     shotFit: "contain",
     priceLabel: "Scout notu",
@@ -388,6 +468,7 @@ export const scoutReport = defineTemplate<ProfileData>({
       "Çalışma izni sorunu yok",
       "Sözleşmesinde serbest kalma maddesi var",
     ],
-    summary: "Ham ama pahalı değil. Kontra atak oynayan takımlar için hemen, top hâkimiyeti oynayanlar için iki sezon sonra hazır.",
+    summary:
+      "Ham ama pahalı değil. Kontra atak oynayan takımlar için hemen, top hâkimiyeti oynayanlar için iki sezon sonra hazır.",
   },
 });

@@ -227,9 +227,20 @@ export function Screenshot({
           className={cn("absolute inset-0 size-full", fit === "cover" ? "object-cover object-top" : "object-contain")}
         />
       ) : (
-        <div className="absolute inset-0 grid place-content-center justify-items-center gap-4 text-fm-muted">
+        <div
+          className={cn(
+            "absolute inset-3 grid place-content-center justify-items-center gap-4 rounded-[20px] text-center text-fm-muted",
+            editing && "border-[3px] border-dashed border-fm-muted/50",
+          )}
+        >
           <MonitorUp className="size-[72px]" strokeWidth={1.25} />
-          {editing ? <span className="text-[24px]">FM profil ekran görüntüsünü buraya yükle</span> : null}
+          {editing ? (
+            <span className="text-[24px] leading-[1.4]">
+              FM profil görüntüsünü buraya sürükle
+              <br />
+              ya da tıkla · Ctrl+V ile yapıştır
+            </span>
+          ) : null}
         </div>
       )}
     </UploadTarget>

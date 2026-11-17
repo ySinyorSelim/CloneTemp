@@ -2,7 +2,17 @@ import { Minus, Plus, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
 import { UploadTarget } from "../edit-context";
-import { AttributeRows, CardFrame, Flag, Label, Panel, Photo, Screenshot, Stars, nameSize } from "../frame";
+import {
+  AttributeRows,
+  CardFrame,
+  Flag,
+  Label,
+  Panel,
+  Photo,
+  Screenshot,
+  Stars,
+  nameSize,
+} from "../frame";
 import type { Attribute } from "../frame";
 import type { Layout, TemplateProps } from "../types";
 
@@ -12,6 +22,7 @@ type PlayerReviewData = {
   club: string;
   position: string;
   photo: string;
+  middle: string;
   profileShot: string;
   shotFit: string;
   age: string;
@@ -31,9 +42,22 @@ type PlayerReviewData = {
   verdict: string;
 };
 
-const ATTRIBUTE_ROWS: Record<Layout, number> = { portrait: 6, square: 6, story: 8, wide: 6 };
+const ATTRIBUTE_ROWS: Record<Layout, number> = {
+  portrait: 6,
+  square: 6,
+  story: 8,
+  wide: 6,
+};
 
-function AttributeGroup({ title, items, rows }: { title: string; items: Attribute[]; rows: number }) {
+function AttributeGroup({
+  title,
+  items,
+  rows,
+}: {
+  title: string;
+  items: Attribute[];
+  rows: number;
+}) {
   return (
     <Panel className="flex min-w-0 flex-1 flex-col px-6 pt-5 pb-4">
       <Label className="mb-2 text-fm-accent">{title}</Label>
@@ -42,18 +66,31 @@ function AttributeGroup({ title, items, rows }: { title: string; items: Attribut
   );
 }
 
-function BulletList({ title, items, positive }: { title: string; items: string[]; positive: boolean }) {
+function BulletList({
+  title,
+  items,
+  positive,
+}: {
+  title: string;
+  items: string[];
+  positive: boolean;
+}) {
   const Icon = positive ? Plus : Minus;
   return (
     <div className="min-w-0 flex-1">
       <Label>{title}</Label>
       <ul className="mt-3 space-y-2.5">
         {items.slice(0, 3).map((item, i) => (
-          <li key={i} className="flex items-start gap-3 text-[21px] leading-[1.3]">
+          <li
+            key={i}
+            className="flex items-start gap-3 text-[21px] leading-[1.3]"
+          >
             <span
               className={cn(
                 "mt-0.5 grid size-[24px] shrink-0 place-items-center rounded-full",
-                positive ? "bg-fm-good/20 text-fm-good" : "bg-fm-bad/20 text-fm-bad",
+                positive
+                  ? "bg-fm-good/20 text-fm-good"
+                  : "bg-fm-bad/20 text-fm-bad",
               )}
             >
               <Icon className="size-[16px]" strokeWidth={3} />
@@ -69,7 +106,9 @@ function BulletList({ title, items, positive }: { title: string; items: string[]
 function RatingBadge({ rating }: { rating: string }) {
   return (
     <div className="flex shrink-0 flex-col items-center rounded-[24px] bg-fm-accent px-5 pt-4 pb-3 text-fm-on-accent">
-      <span className="fm-display text-[52px] tracking-normal tabular-nums">{rating}</span>
+      <span className="fm-display text-[52px] tracking-normal tabular-nums">
+        {rating}
+      </span>
       <span className="fm-label mt-1 text-[14px]">Puan</span>
     </div>
   );
@@ -84,7 +123,11 @@ function StarRow({ label, value }: { label: string; value: number }) {
   );
 }
 
-function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewData>) {
+function PlayerReviewCard({
+  data,
+  format,
+  brand,
+}: TemplateProps<PlayerReviewData>) {
   const layout = format.layout;
   const rows = ATTRIBUTE_ROWS[layout];
   const facts: { label: string; value: string; flag?: string }[] = [
@@ -100,15 +143,28 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
       <span className="fm-label inline-block rounded-full bg-fm-accent px-4 py-1.5 text-[17px] text-fm-on-accent">
         {data.position}
       </span>
-      <h1 className={cn("fm-display mt-4", nameSize(data.name, layout))}>{data.name}</h1>
+      <h1 className={cn("fm-display mt-4", nameSize(data.name, layout))}>
+        {data.name}
+      </h1>
       <p className="mt-3 text-[27px] text-fm-muted">{data.club}</p>
     </div>
   );
 
-  const attributes = data.profileShot ? (
-    <Screenshot src={data.profileShot} path="profileShot" fit={data.shotFit} className="min-h-[300px] flex-1" />
+  const showShot = data.middle === "shot" || data.profileShot !== "";
+  const attributes = showShot ? (
+    <Screenshot
+      src={data.profileShot}
+      path="profileShot"
+      fit={data.shotFit}
+      className="min-h-[300px] flex-1"
+    />
   ) : (
-    <UploadTarget path="profileShot" dropOnly hintClass="text-[28px]" className="relative flex gap-4">
+    <UploadTarget
+      path="profileShot"
+      dropOnly
+      hintClass="text-[28px]"
+      className="relative flex gap-4"
+    >
       <AttributeGroup title="Teknik" items={data.technical} rows={rows} />
       <AttributeGroup title="Zihinsel" items={data.mental} rows={rows} />
       <AttributeGroup title="Fiziksel" items={data.physical} rows={rows} />
@@ -128,7 +184,12 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
         <div className="flex min-h-0 flex-1 gap-10">
           <div className="flex w-[430px] shrink-0 flex-col justify-between">
             <div className="flex gap-5">
-              <Photo src={data.photo} alt={data.name} path="photo" className="h-[230px] w-[200px]" />
+              <Photo
+                src={data.photo}
+                alt={data.name}
+                path="photo"
+                className="h-[230px] w-[200px]"
+              />
               <div className="flex flex-col justify-between">
                 <RatingBadge rating={data.rating} />
                 <div className="space-y-3">
@@ -170,7 +231,9 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
             src={data.photo}
             alt={data.name}
             path="photo"
-            className={layout === "story" ? "h-[380px] w-[320px]" : "h-[300px] w-[270px]"}
+            className={
+              layout === "story" ? "h-[380px] w-[320px]" : "h-[300px] w-[270px]"
+            }
           />
           <div className="flex min-w-0 flex-1 flex-col justify-between py-1">
             <div className="flex items-start justify-between gap-4">
@@ -198,13 +261,17 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
 
         {attributes}
 
-        {layout === "story" || (layout === "portrait" && !data.profileShot) ? prosCons : null}
+        {layout === "story" || (layout === "portrait" && !showShot)
+          ? prosCons
+          : null}
 
         {layout !== "square" ? (
           <p
             className={cn(
               "shrink-0 border-l-4 border-fm-accent pl-5 leading-[1.35]",
-              layout === "story" ? "line-clamp-4 text-[27px]" : "line-clamp-2 text-[23px]",
+              layout === "story"
+                ? "line-clamp-4 text-[27px]"
+                : "line-clamp-2 text-[23px]",
             )}
           >
             {data.verdict}
@@ -216,8 +283,20 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
 }
 
 const attributeFields = [
-  { key: "name", label: "Özellik", type: "text" as const, size: "grow" as const },
-  { key: "value", label: "1-20", type: "number" as const, size: "xs" as const, min: 1, max: 20 },
+  {
+    key: "name",
+    label: "Özellik",
+    type: "text" as const,
+    size: "grow" as const,
+  },
+  {
+    key: "value",
+    label: "1-20",
+    type: "number" as const,
+    size: "xs" as const,
+    min: 1,
+    max: 20,
+  },
 ];
 
 export const playerReview = defineTemplate<PlayerReviewData>({
@@ -233,6 +312,15 @@ export const playerReview = defineTemplate<PlayerReviewData>({
     { key: "club", label: "Kulüp", type: "text" },
     { key: "position", label: "Mevki", type: "text" },
     { key: "photo", label: "Oyuncu yüzü", type: "image" },
+    {
+      key: "middle",
+      label: "Orta alan",
+      type: "select",
+      options: [
+        { value: "attributes", label: "Özellik kutuları" },
+        { value: "shot", label: "Görsel alanı (FM profili)" },
+      ],
+    },
     {
       key: "profileShot",
       label: "FM profil ekran görüntüsü",
@@ -254,14 +342,56 @@ export const playerReview = defineTemplate<PlayerReviewData>({
     { key: "foot", label: "Ayak", type: "text" },
     { key: "height", label: "Boy", type: "text" },
     { key: "value", label: "Değer", type: "text" },
-    { key: "ability", label: "Mevcut yetenek (yıldız)", type: "number", min: 0, max: 5, step: 0.5 },
-    { key: "potential", label: "Potansiyel (yıldız)", type: "number", min: 0, max: 5, step: 0.5 },
+    {
+      key: "ability",
+      label: "Mevcut yetenek (yıldız)",
+      type: "number",
+      min: 0,
+      max: 5,
+      step: 0.5,
+    },
+    {
+      key: "potential",
+      label: "Potansiyel (yıldız)",
+      type: "number",
+      min: 0,
+      max: 5,
+      step: 0.5,
+    },
     { key: "rating", label: "Puan", type: "text" },
-    { key: "technical", label: "Teknik özellikler", type: "list", itemLabel: "Özellik", fields: attributeFields },
-    { key: "mental", label: "Zihinsel özellikler", type: "list", itemLabel: "Özellik", fields: attributeFields },
-    { key: "physical", label: "Fiziksel özellikler", type: "list", itemLabel: "Özellik", fields: attributeFields },
-    { key: "pros", label: "Artılar", type: "lines", hint: "Her satır bir madde (en fazla 3)" },
-    { key: "cons", label: "Eksiler", type: "lines", hint: "Her satır bir madde (en fazla 3)" },
+    {
+      key: "technical",
+      label: "Teknik özellikler",
+      type: "list",
+      itemLabel: "Özellik",
+      fields: attributeFields,
+    },
+    {
+      key: "mental",
+      label: "Zihinsel özellikler",
+      type: "list",
+      itemLabel: "Özellik",
+      fields: attributeFields,
+    },
+    {
+      key: "physical",
+      label: "Fiziksel özellikler",
+      type: "list",
+      itemLabel: "Özellik",
+      fields: attributeFields,
+    },
+    {
+      key: "pros",
+      label: "Artılar",
+      type: "lines",
+      hint: "Her satır bir madde (en fazla 3)",
+    },
+    {
+      key: "cons",
+      label: "Eksiler",
+      type: "lines",
+      hint: "Her satır bir madde (en fazla 3)",
+    },
     { key: "verdict", label: "Karar", type: "textarea" },
   ],
   defaults: {
@@ -270,6 +400,7 @@ export const playerReview = defineTemplate<PlayerReviewData>({
     club: "Göztepe · Süper Lig",
     position: "OOS (M)",
     photo: "",
+    middle: "attributes",
     profileShot: "",
     shotFit: "contain",
     age: "19",
