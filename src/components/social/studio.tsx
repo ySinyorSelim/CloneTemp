@@ -34,6 +34,7 @@ const DEFAULT_STATE: StudioState = {
     name: "FM Atölye",
     handle: "@fmatolye",
     footnote: "Football Manager 26",
+    link: "youtube.com/sinyorselim",
     logo: "",
     theme: "night",
     ...THEMES[0].palette,
@@ -369,6 +370,7 @@ export function Studio() {
                 { key: "bodyFont", label: "Metin yazı tipi", type: "select", options: BODY_FONTS },
                 { key: "name", label: "Hesap adı", type: "text" },
                 { key: "handle", label: "Kullanıcı adı", type: "text" },
+                { key: "link", label: "Kanal adresi (her kartta)", type: "text" },
                 { key: "footnote", label: "Alt bilgi (sağ alt)", type: "text" },
                 {
                   key: "backgroundDim",

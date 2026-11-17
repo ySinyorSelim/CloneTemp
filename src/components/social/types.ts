@@ -36,6 +36,8 @@ export type Brand = Palette & {
   name: string;
   handle: string;
   footnote: string;
+  /** Channel address printed in the footer of every card, e.g. "youtube.com/kanal". */
+  link: string;
   /** Uploaded logo shown in the header instead of the default mark. */
   logo: string;
   theme: ThemeId | "custom";

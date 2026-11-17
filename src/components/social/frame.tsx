@@ -1,5 +1,5 @@
 /* eslint-disable @next/next/no-img-element -- cards are rasterised client-side; next/image would break export */
-import { Star, User } from "lucide-react";
+import { Play, Star, User } from "lucide-react";
 import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { DIM_CLASS, FRAME_CLASS, luminance } from "./formats";
@@ -73,8 +73,20 @@ export function CardFrame({ format, brand, tag, children }: CardFrameProps) {
       </main>
 
       <footer className="relative flex items-center justify-between gap-6 border-t border-fm-line pt-5 text-[21px]">
-        <span className="font-semibold">{brand.handle}</span>
-        <span className="text-fm-muted">{brand.footnote}</span>
+        <div className="flex min-w-0 items-center gap-5">
+          {brand.link ? (
+            <span className="flex items-center gap-2.5 font-semibold">
+              <span className="grid h-[22px] w-[31px] shrink-0 place-items-center rounded-[7px] bg-fm-accent text-fm-on-accent">
+                <Play className="size-[11px] fill-current" strokeWidth={3} />
+              </span>
+              {brand.link}
+            </span>
+          ) : null}
+          {brand.handle ? (
+            <span className={brand.link ? "truncate text-fm-muted" : "truncate font-semibold"}>{brand.handle}</span>
+          ) : null}
+        </div>
+        <span className="shrink-0 text-fm-muted">{brand.footnote}</span>
       </footer>
     </div>
   );
