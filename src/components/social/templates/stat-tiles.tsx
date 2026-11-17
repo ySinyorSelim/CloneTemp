@@ -1,4 +1,4 @@
-import { BarChart3, Trophy } from "lucide-react";
+import { BarChart3, Landmark, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
 import { CardFrame, Flag, Label, Panel } from "../frame";
@@ -145,6 +145,43 @@ export const statTiles = defineTemplate<StatTilesData>({
       "Altyapıdan 3 oyuncu A takımda",
       "Yönetim güveni: A+",
       "Stat kapasitesi artırıldı",
+    ],
+  },
+});
+
+export const finances = defineTemplate<StatTilesData>({
+  id: "finances",
+  name: "Kulüp Finansı",
+  category: "Maç ve Lig",
+  description: "Bütçe, maaş, gelir-gider özeti",
+  icon: Landmark,
+  Component: StatTilesCard,
+  fields: statTiles.fields,
+  defaults: {
+    tag: "Finans",
+    title: "Kasada ne var?",
+    subtitle: "Göztepe · 2026/27 sezon sonu",
+    nation: "tr",
+    tiles: [
+      { value: "€38M", label: "Banka bakiyesi", note: "Geçen yıl: €6M" },
+      { value: "€25M", label: "Transfer bütçesi", note: "Yönetim onayladı" },
+      { value: "€620K", label: "Haftalık maaş", note: "Bütçenin %82'si" },
+      { value: "€61M", label: "Oyuncu satışı", note: "3 satış" },
+      { value: "€19M", label: "Oyuncu alımı", note: "5 transfer" },
+      { value: "€14M", label: "Avrupa geliri", note: "Grup aşaması" },
+      { value: "€9M", label: "Sponsorluk", note: "Yeni forma anlaşması" },
+      { value: "€0", label: "Borç", note: "Kredi kapatıldı" },
+      { value: "A", label: "Finansal durum", note: "Güvenli" },
+      { value: "€11M", label: "Bilet geliri", note: "Ortalama 18.400" },
+    ],
+    highlightsTitle: "Öne çıkanlar",
+    highlights: [
+      "Kulüp tarihinin en yüksek satışı",
+      "Stat genişletme kredisi kapandı",
+      "Maaş bütçesi artırıldı",
+      "Altyapı tesisi yükseltildi",
+      "Yeni ana sponsor",
+      "Kâr eden üst üste 3. sezon",
     ],
   },
 });

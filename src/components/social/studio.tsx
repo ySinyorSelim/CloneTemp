@@ -1,7 +1,8 @@
 "use client";
 
-import { toPng } from "html-to-image";
-import { Download, Images, Loader2, RotateCcw } from "lucide-react";
+import { zipSync } from "fflate";
+import { toBlob } from "html-to-image";
+import { Check, Download, LayoutGrid, Loader2, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { AutoForm } from "./auto-form";
@@ -16,6 +17,10 @@ const STORAGE_KEY = "fm-studio-v1";
 type StudioState = {
   templateId: string;
   formatId: FormatId;
+  /** Show every selected size side by side instead of one. */
+  showAll: boolean;
+  /** Sizes included in the one-click download. */
+  exportIds: FormatId[];
   brand: Brand;
   data: Record<string, DataRecord>;
 };
@@ -23,9 +28,20 @@ type StudioState = {
 const DEFAULT_STATE: StudioState = {
   templateId: TEMPLATES[0].id,
   formatId: "ig-portrait",
+  showAll: false,
+  exportIds: ["ig-portrait", "x-landscape"],
   brand: { name: "FM Atölye", handle: "@fmatolye", footnote: "Football Manager 26", theme: "night" },
   data: {},
 };
+
+function saveFile(blob: Blob, name: string) {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = name;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(url), 10_000);
+}
 
 function loadState(): StudioState {
   try {
@@ -37,6 +53,7 @@ function loadState(): StudioState {
       ...saved,
       brand: { ...DEFAULT_STATE.brand, ...saved.brand },
       data: saved.data ?? {},
+      exportIds: Array.isArray(saved.exportIds) ? saved.exportIds : DEFAULT_STATE.exportIds,
     };
   } catch {
     return DEFAULT_STATE;
@@ -95,20 +112,37 @@ export function Studio() {
     setState((s) => ({ ...s, data: { ...s.data, [template.id]: next } }));
   const setBrand = (patch: Partial<Brand>) => setState((s) => ({ ...s, brand: { ...s.brand, ...patch } }));
 
+  const exportFormats = FORMATS.filter((f) => state.exportIds.includes(f.id));
+  const toggleExport = (id: FormatId) =>
+    setState((s) => ({
+      ...s,
+      exportIds: s.exportIds.includes(id) ? s.exportIds.filter((x) => x !== id) : [...s.exportIds, id],
+    }));
+
+  /** One size → a PNG. Several sizes → a single zip, so one click covers Instagram and X. */
   const download = useCallback(
     async (formats: Format[]) => {
+      if (formats.length === 0) return;
       setBusy(true);
       setError("");
       try {
         await document.fonts.ready;
+        const files: { name: string; blob: Blob }[] = [];
         for (const target of formats) {
           const node = exportRefs.current[target.id]?.firstElementChild;
           if (!(node instanceof HTMLElement)) continue;
-          const url = await toPng(node, { width: target.width, height: target.height, pixelRatio: 1 });
-          const link = document.createElement("a");
-          link.href = url;
-          link.download = `${template.id}-${target.id}-${target.width}x${target.height}.png`;
-          link.click();
+          const blob = await toBlob(node, { width: target.width, height: target.height, pixelRatio: 1 });
+          if (!blob) throw new Error("empty image");
+          const platform = target.platform === "X" ? "x" : "instagram";
+          files.push({ name: `${template.id}-${platform}-${target.width}x${target.height}.png`, blob });
+        }
+        if (files.length === 1) {
+          saveFile(files[0].blob, files[0].name);
+        } else {
+          const entries: Record<string, Uint8Array> = {};
+          for (const file of files) entries[file.name] = new Uint8Array(await file.blob.arrayBuffer());
+          const zipped = zipSync(entries, { level: 0 });
+          saveFile(new Blob([zipped.slice()], { type: "application/zip" }), `${template.id}.zip`);
         }
       } catch {
         setError("Görsel oluşturulamadı. Lütfen tekrar deneyin.");
@@ -129,10 +163,12 @@ export function Studio() {
               <button
                 key={f.id}
                 type="button"
-                onClick={() => setState((s) => ({ ...s, formatId: f.id }))}
+                onClick={() => setState((s) => ({ ...s, formatId: f.id, showAll: false }))}
                 className={cn(
                   "rounded-md px-3 py-1.5 text-left text-sm transition",
-                  f.id === format.id ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                  !state.showAll && f.id === format.id
+                    ? "bg-primary text-primary-foreground"
+                    : "text-muted-foreground hover:text-foreground",
                 )}
               >
                 <span className="font-medium">
@@ -141,33 +177,94 @@ export function Studio() {
                 <span className="ml-2 text-xs opacity-70">{f.ratio}</span>
               </button>
             ))}
-          </div>
-          <span className="text-xs text-muted-foreground tabular-nums">
-            {format.width} × {format.height} px
-          </span>
-          <div className="ml-auto flex gap-2">
             <button
               type="button"
-              disabled={busy}
-              onClick={() => download(FORMATS)}
-              className="flex h-9 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium hover:bg-accent disabled:opacity-50"
+              onClick={() => setState((s) => ({ ...s, showAll: true }))}
+              className={cn(
+                "flex items-center gap-1.5 rounded-md px-3 py-1.5 text-sm font-medium transition",
+                state.showAll ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+              )}
             >
-              <Images className="size-4" /> Tüm boyutlar
+              <LayoutGrid className="size-4" /> Yan yana
             </button>
+          </div>
+          {!state.showAll ? (
+            <span className="text-xs text-muted-foreground tabular-nums">
+              {format.width} × {format.height} px
+            </span>
+          ) : null}
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2 rounded-lg border border-border p-2">
+          <span className="px-1 text-xs text-muted-foreground">Pakete dahil:</span>
+          {FORMATS.map((f) => {
+            const active = state.exportIds.includes(f.id);
+            return (
+              <button
+                key={f.id}
+                type="button"
+                aria-pressed={active}
+                onClick={() => toggleExport(f.id)}
+                className={cn(
+                  "flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium transition",
+                  active ? "border-primary bg-accent text-foreground" : "border-border text-muted-foreground",
+                )}
+              >
+                <Check className={cn("size-3", !active && "opacity-0")} />
+                {f.platform} {f.ratio}
+              </button>
+            );
+          })}
+          <div className="ml-auto flex gap-2">
+            {!state.showAll ? (
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => download([format])}
+                className="flex h-9 items-center gap-2 rounded-md border border-border px-3 text-sm font-medium hover:bg-accent disabled:opacity-50"
+              >
+                Sadece bu boyut
+              </button>
+            ) : null}
             <button
               type="button"
-              disabled={busy}
-              onClick={() => download([format])}
+              disabled={busy || exportFormats.length === 0}
+              onClick={() => download(exportFormats)}
               className="flex h-9 items-center gap-2 rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90 disabled:opacity-50"
             >
-              {busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />} PNG indir
+              {busy ? <Loader2 className="size-4 animate-spin" /> : <Download className="size-4" />}
+              Paketi indir ({exportFormats.length})
             </button>
           </div>
         </div>
         {error ? <p role="alert" className="text-sm text-destructive">{error}</p> : null}
-        <div className="h-[62vh] min-h-0 lg:h-auto lg:flex-1">
-          <Preview format={format}>{template.render({ data, format, brand: state.brand })}</Preview>
-        </div>
+        {state.showAll ? (
+          <div
+            className={cn(
+              "grid h-[80vh] min-h-0 gap-4 lg:h-auto lg:flex-1",
+              exportFormats.length > 1 ? "grid-cols-2" : "grid-cols-1",
+              exportFormats.length > 2 ? "grid-rows-2" : "grid-rows-1",
+            )}
+          >
+            {exportFormats.length === 0 ? (
+              <p className="text-sm text-muted-foreground">Pakete en az bir boyut ekleyin.</p>
+            ) : null}
+            {exportFormats.map((f) => (
+              <div key={f.id} className="flex min-h-0 min-w-0 flex-col gap-2">
+                <p className="text-xs text-muted-foreground">
+                  {f.platform} {f.label} · {f.width} × {f.height}
+                </p>
+                <div className="min-h-0 flex-1">
+                  <Preview format={f}>{template.render({ data, format: f, brand: state.brand })}</Preview>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="h-[62vh] min-h-0 lg:h-auto lg:flex-1">
+            <Preview format={format}>{template.render({ data, format, brand: state.brand })}</Preview>
+          </div>
+        )}
       </section>
 
       {/* Controls */}

@@ -1,4 +1,4 @@
-import { ListOrdered } from "lucide-react";
+import { Goal, ListOrdered, Sprout } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
 import { CardFrame, Flag, chunk } from "../frame";
@@ -126,6 +126,56 @@ export const topList = defineTemplate<TopListData>({
       { name: "Javi Morales", nation: "es", detail: "Betis · OS (M) · 20", value: "€18M" },
       { name: "Kofi Mensah", nation: "gh", detail: "Nordsjælland · SF (M) · 18", value: "€5.5M" },
       { name: "Dario Kovač", nation: "hr", detail: "Dinamo Zagreb · OOS (M) · 19", value: "€8M" },
+    ],
+  },
+});
+
+export const topScorers = defineTemplate<TopListData>({
+  id: "top-scorers",
+  name: "Gol Krallığı",
+  category: "Maç ve Lig",
+  description: "Gol, asist, puan sıralamaları",
+  icon: Goal,
+  Component: TopListCard,
+  fields: topList.fields,
+  defaults: {
+    tag: "Gol Krallığı",
+    title: "Gol krallığı",
+    subtitle: "Süper Lig · 12. hafta sonu",
+    valueLabel: "Gol",
+    items: [
+      { name: "Kahveci", nation: "tr", detail: "Göztepe · 12 maç", value: "11" },
+      { name: "Okafor", nation: "ng", detail: "Galatasaray · 11 maç", value: "10" },
+      { name: "Silva", nation: "br", detail: "Fenerbahçe · 12 maç", value: "9" },
+      { name: "Kerem Aydın", nation: "tr", detail: "Göztepe · 12 maç", value: "8" },
+      { name: "Rossi", nation: "it", detail: "Beşiktaş · 10 maç", value: "7" },
+      { name: "Dubois", nation: "fr", detail: "Trabzonspor · 12 maç", value: "7" },
+      { name: "Tanaka", nation: "jp", detail: "Samsunspor · 11 maç", value: "6" },
+      { name: "De Vries", nation: "nl", detail: "Başakşehir · 12 maç", value: "6" },
+    ],
+  },
+});
+
+export const youthIntake = defineTemplate<TopListData>({
+  id: "youth-intake",
+  name: "Altyapı Jenerasyonu",
+  category: "Kadro ve Taktik",
+  description: "Yeni gelen gençler ve potansiyelleri",
+  icon: Sprout,
+  Component: TopListCard,
+  fields: topList.fields,
+  defaults: {
+    tag: "Altyapı",
+    title: "2027 jenerasyonu",
+    subtitle: "Altyapı sorumlusu: \"Altın jenerasyon\"",
+    valueLabel: "Potansiyel",
+    items: [
+      { name: "Emre Soylu", nation: "tr", detail: "DOS · 15 yaş · Model vatandaş", value: "★★★★★" },
+      { name: "Barış Tekin", nation: "tr", detail: "STP · 16 yaş · Kararlı", value: "★★★★½" },
+      { name: "Deniz Uçar", nation: "tr", detail: "OK (SL) · 15 yaş · Hırslı", value: "★★★★" },
+      { name: "Yusuf Kara", nation: "de", detail: "SF · 16 yaş · Dengeli", value: "★★★½" },
+      { name: "Ali Öztürk", nation: "tr", detail: "KL · 15 yaş · Profesyonel", value: "★★★½" },
+      { name: "Mert Arslan", nation: "tr", detail: "OOS · 16 yaş · Dengeli", value: "★★★" },
     ],
   },
 });

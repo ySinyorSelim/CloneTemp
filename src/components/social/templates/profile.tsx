@@ -1,4 +1,4 @@
-import { Award, BadgeCheck, Check, UserPlus } from "lucide-react";
+import { Award, BadgeCheck, Binoculars, Check, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
 import { AttributeRows, CardFrame, Flag, Label, Panel, Photo, nameSize } from "../frame";
@@ -311,5 +311,52 @@ export const award = defineTemplate<ProfileData>({
       "Değeri bir ayda €4M arttı",
     ],
     summary: "19 yaşında ligin en değerli oyuncusu olma yolunda. Devre arasında teklifler yağacak.",
+  },
+});
+
+export const scoutReport = defineTemplate<ProfileData>({
+  id: "scout-report",
+  name: "Scout Raporu",
+  category: "Oyuncu",
+  description: "Haftalık keşif: gizli kalmış isimler",
+  icon: Binoculars,
+  Component: ProfileCard,
+  fields,
+  defaults: {
+    tag: "Scout Raporu",
+    name: "Ibrahima Sané",
+    nation: "sn",
+    role: "OK (SĞ) · Keşif",
+    subtitle: "Metz · 18 yaş",
+    photo: "",
+    priceLabel: "Scout notu",
+    price: "A-",
+    facts: [
+      { label: "Değer", value: "€6.5M" },
+      { label: "Maaş", value: "€4K/hf" },
+      { label: "Kişilik", value: "Hırslı" },
+      { label: "İlgi", value: "3 kulüp" },
+    ],
+    attributesTitle: "Scout gözünden",
+    attributes: [
+      { name: "Hız", value: 17 },
+      { name: "Hızlanma", value: 17 },
+      { name: "Dripling", value: 15 },
+      { name: "Orta", value: 14 },
+      { name: "Çeviklik", value: 16 },
+      { name: "Özel Yetenek", value: 15 },
+      { name: "Karar Alma", value: 10 },
+      { name: "Çalışkanlık", value: 14 },
+      { name: "Dayanıklılık", value: 13 },
+    ],
+    reasonsTitle: "Rapor özeti",
+    reasons: [
+      "Ligin en hızlı üç kanadından biri",
+      "Karar alma zayıf, antrenmanla gelişir",
+      "Büyük maçlarda performansı düşmüyor",
+      "Çalışma izni sorunu yok",
+      "Sözleşmesinde serbest kalma maddesi var",
+    ],
+    summary: "Ham ama pahalı değil. Kontra atak oynayan takımlar için hemen, top hâkimiyeti oynayanlar için iki sezon sonra hazır.",
   },
 });

@@ -1,14 +1,17 @@
 import type { TemplateDefinition } from "../types";
+import { announcement } from "./announcement";
 import { comparison } from "./comparison";
 import { fixtures } from "./fixtures";
 import { leagueTable } from "./league-table";
 import { lineup, nationsLineup, tactic } from "./lineup";
 import { matchResult } from "./match-result";
 import { playerReview } from "./player-review";
-import { award, playerRecommendation, staffRecommendation } from "./profile";
-import { statTiles } from "./stat-tiles";
+import { poll } from "./poll";
+import { award, playerRecommendation, scoutReport, staffRecommendation } from "./profile";
+import { finances, statTiles } from "./stat-tiles";
+import { timeline } from "./timeline";
 import { tip } from "./tip";
-import { topList } from "./top-list";
+import { topList, topScorers, youthIntake } from "./top-list";
 import { transfer } from "./transfer";
 
 /**
@@ -20,6 +23,7 @@ import { transfer } from "./transfer";
 export const TEMPLATES: TemplateDefinition[] = [
   playerReview,
   playerRecommendation,
+  scoutReport,
   comparison,
   transfer,
   award,
@@ -27,10 +31,16 @@ export const TEMPLATES: TemplateDefinition[] = [
   nationsLineup,
   tactic,
   staffRecommendation,
+  youthIntake,
   matchResult,
   leagueTable,
   fixtures,
+  topScorers,
   statTiles,
+  finances,
+  timeline,
   topList,
   tip,
+  poll,
+  announcement,
 ];
