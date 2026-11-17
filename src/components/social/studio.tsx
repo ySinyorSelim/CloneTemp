@@ -7,7 +7,9 @@ import { cn } from "@/lib/utils";
 import { AutoForm } from "./auto-form";
 import { FORMATS, THEMES, getFormat } from "./formats";
 import { TEMPLATES } from "./templates";
-import type { Brand, DataRecord, Format, FormatId } from "./types";
+import type { Brand, Category, DataRecord, Format, FormatId } from "./types";
+
+const CATEGORIES: Category[] = ["Oyuncu", "Kadro ve Taktik", "Maç ve Lig", "İçerik"];
 
 const STORAGE_KEY = "fm-studio-v1";
 
@@ -177,23 +179,28 @@ export function Studio() {
         <div className="min-h-0 flex-1 space-y-6 overflow-y-auto p-4">
           <div>
             <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Şablon</h2>
-            <div className="grid grid-cols-2 gap-2">
-              {TEMPLATES.map((t) => (
-                <button
-                  key={t.id}
-                  type="button"
-                  onClick={() => setState((s) => ({ ...s, templateId: t.id }))}
-                  className={cn(
-                    "flex items-start gap-2.5 rounded-lg border p-2.5 text-left transition",
-                    t.id === template.id ? "border-primary bg-accent" : "border-border hover:bg-accent/50",
-                  )}
-                >
-                  <t.icon className="mt-0.5 size-4 shrink-0" />
-                  <span className="min-w-0">
-                    <span className="block text-sm font-medium">{t.name}</span>
-                    <span className="block text-xs text-muted-foreground">{t.description}</span>
-                  </span>
-                </button>
+            <div className="space-y-3">
+              {CATEGORIES.map((category) => (
+                <div key={category}>
+                  <p className="mb-1.5 text-xs text-muted-foreground">{category}</p>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {TEMPLATES.filter((t) => t.category === category).map((t) => (
+                      <button
+                        key={t.id}
+                        type="button"
+                        title={t.description}
+                        onClick={() => setState((s) => ({ ...s, templateId: t.id }))}
+                        className={cn(
+                          "flex items-center gap-2 rounded-lg border px-2.5 py-2 text-left text-sm font-medium transition",
+                          t.id === template.id ? "border-primary bg-accent" : "border-border hover:bg-accent/50",
+                        )}
+                      >
+                        <t.icon className="size-4 shrink-0" />
+                        <span className="truncate">{t.name}</span>
+                      </button>
+                    ))}
+                  </div>
+                </div>
               ))}
             </div>
           </div>

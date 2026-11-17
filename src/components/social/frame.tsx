@@ -3,7 +3,7 @@ import { Star, User } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { FRAME_CLASS } from "./formats";
-import type { Brand, Format } from "./types";
+import type { Brand, Format, Layout } from "./types";
 
 type CardFrameProps = {
   format: Format;
@@ -121,3 +121,54 @@ export function chunk<T>(items: T[], size: number): T[][] {
   for (let i = 0; i < items.length; i += size) out.push(items.slice(i, i + size));
   return out;
 }
+
+/** Country flag from /public/flags. `code` is the lowercase ISO code ("tr", "gb-eng"). */
+export function Flag({ code, round, className }: { code: string | undefined; round?: boolean; className?: string }) {
+  if (!code) return null;
+  return (
+    <img
+      src={`/flags/${code}.svg`}
+      alt=""
+      className={cn(
+        "inline-block shrink-0 object-cover ring-1 ring-fm-line",
+        round ? "aspect-square rounded-full" : "aspect-[4/3] rounded-[0.14em]",
+        className,
+      )}
+    />
+  );
+}
+
+/** Headline size that keeps the longest word of a name on one line. */
+export function nameSize(name: string, layout: Layout): string {
+  const longest = Math.max(...name.split(/\s+/).map((w) => w.length), 1);
+  if (layout === "wide") return longest <= 8 ? "text-[58px]" : longest <= 11 ? "text-[46px]" : "text-[36px]";
+  return longest <= 8 ? "text-[68px]" : longest <= 10 ? "text-[58px]" : "text-[48px]";
+}
+
+export type Attribute = { name: string; value: number };
+
+/** FM-style attribute rows (1–20) with a small bar; 16+ is highlighted. */
+export function AttributeRows({ items, rows, barClass = "w-[48px]" }: { items: Attribute[]; rows: number; barClass?: string }) {
+  return (
+    <ul>
+      {items.slice(0, rows).map((attr, i) => {
+        const tone = attr.value >= 16 ? "text-fm-accent" : attr.value >= 11 ? "text-fm-text" : "text-fm-muted";
+        return (
+          <li key={i} className="flex h-[40px] items-center gap-3 border-b border-fm-line last:border-0">
+            <span className="min-w-0 flex-1 truncate text-[21px] text-fm-muted">{attr.name}</span>
+            <span className={cn("h-[6px] overflow-hidden rounded-full bg-fm-line", barClass)}>
+              <span
+                className={cn("block h-full rounded-full", attr.value >= 16 ? "bg-fm-accent" : "bg-fm-muted")}
+                style={{ width: `${Math.min(Math.max(attr.value, 0), 20) * 5}%` }}
+              />
+            </span>
+            <span className={cn("w-[30px] text-right text-[24px] font-bold tabular-nums", tone)}>{attr.value}</span>
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
+export const toNumber = (value: string) =>
+  Number.parseFloat(value.replace(",", ".").replace(/[^0-9.-]/g, "")) || 0;

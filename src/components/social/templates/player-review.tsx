@@ -1,10 +1,9 @@
 import { Minus, Plus, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
-import { CardFrame, Label, Panel, Photo, Stars } from "../frame";
+import { AttributeRows, CardFrame, Flag, Label, Panel, Photo, Stars, nameSize } from "../frame";
+import type { Attribute } from "../frame";
 import type { Layout, TemplateProps } from "../types";
-
-type Attribute = { name: string; value: number };
 
 type PlayerReviewData = {
   tag: string;
@@ -13,6 +12,7 @@ type PlayerReviewData = {
   position: string;
   photo: string;
   age: string;
+  nation: string;
   nationality: string;
   foot: string;
   height: string;
@@ -30,36 +30,11 @@ type PlayerReviewData = {
 
 const ATTRIBUTE_ROWS: Record<Layout, number> = { portrait: 6, square: 6, story: 8, wide: 6 };
 
-function nameSize(name: string, layout: Layout): string {
-  const longest = Math.max(...name.split(/\s+/).map((w) => w.length), 1);
-  if (layout === "wide") return longest <= 8 ? "text-[58px]" : longest <= 11 ? "text-[46px]" : "text-[36px]";
-  return longest <= 8 ? "text-[68px]" : longest <= 10 ? "text-[58px]" : "text-[48px]";
-}
-
 function AttributeGroup({ title, items, rows }: { title: string; items: Attribute[]; rows: number }) {
   return (
     <Panel className="flex min-w-0 flex-1 flex-col px-6 pt-5 pb-4">
       <Label className="mb-2 text-fm-accent">{title}</Label>
-      <ul>
-        {items.slice(0, rows).map((attr, i) => {
-          const tone =
-            attr.value >= 16 ? "text-fm-accent" : attr.value >= 11 ? "text-fm-text" : "text-fm-muted";
-          return (
-            <li key={i} className="flex h-[40px] items-center gap-3 border-b border-fm-line last:border-0">
-              <span className="min-w-0 flex-1 truncate text-[21px] text-fm-muted">{attr.name}</span>
-              <span className="h-[6px] w-[48px] overflow-hidden rounded-full bg-fm-line">
-                <span
-                  className={cn("block h-full rounded-full", attr.value >= 16 ? "bg-fm-accent" : "bg-fm-muted")}
-                  style={{ width: `${Math.min(Math.max(attr.value, 0), 20) * 5}%` }}
-                />
-              </span>
-              <span className={cn("w-[30px] text-right text-[24px] font-bold tabular-nums", tone)}>
-                {attr.value}
-              </span>
-            </li>
-          );
-        })}
-      </ul>
+      <AttributeRows items={items} rows={rows} />
     </Panel>
   );
 }
@@ -109,9 +84,9 @@ function StarRow({ label, value }: { label: string; value: number }) {
 function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewData>) {
   const layout = format.layout;
   const rows = ATTRIBUTE_ROWS[layout];
-  const facts = [
+  const facts: { label: string; value: string; flag?: string }[] = [
     { label: "Yaş", value: data.age },
-    { label: "Uyruk", value: data.nationality },
+    { label: "Uyruk", value: data.nationality, flag: data.nation },
     { label: "Ayak", value: data.foot },
     { label: "Boy", value: data.height },
     { label: "Değer", value: data.value },
@@ -162,7 +137,10 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
               {facts.map((fact) => (
                 <div key={fact.label} className="min-w-0">
                   <Label className="text-[14px]">{fact.label}</Label>
-                  <p className="truncate text-[23px] font-semibold">{fact.value}</p>
+                  <p className="flex items-center gap-2 truncate text-[23px] font-semibold">
+                    <Flag code={fact.flag} className="h-[0.75em]" />
+                    {fact.value}
+                  </p>
                 </div>
               ))}
             </Panel>
@@ -204,7 +182,10 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
           {facts.map((fact) => (
             <div key={fact.label} className="min-w-0 px-5">
               <Label className="text-[15px]">{fact.label}</Label>
-              <p className="mt-1 truncate text-[27px] font-semibold">{fact.value}</p>
+              <p className="mt-1 flex items-center gap-2.5 truncate text-[27px] font-semibold">
+                <Flag code={fact.flag} className="h-[0.75em]" />
+                {fact.value}
+              </p>
             </div>
           ))}
         </Panel>
@@ -236,6 +217,7 @@ const attributeFields = [
 export const playerReview = defineTemplate<PlayerReviewData>({
   id: "player-review",
   name: "Oyuncu İncelemesi",
+  category: "Oyuncu",
   description: "Özellikler, artı/eksi ve karar",
   icon: UserSearch,
   Component: PlayerReviewCard,
@@ -246,7 +228,8 @@ export const playerReview = defineTemplate<PlayerReviewData>({
     { key: "position", label: "Mevki", type: "text" },
     { key: "photo", label: "Oyuncu fotoğrafı", type: "image" },
     { key: "age", label: "Yaş", type: "text" },
-    { key: "nationality", label: "Uyruk", type: "text" },
+    { key: "nation", label: "Bayrak", type: "country" },
+    { key: "nationality", label: "Uyruk (yazı)", type: "text" },
     { key: "foot", label: "Ayak", type: "text" },
     { key: "height", label: "Boy", type: "text" },
     { key: "value", label: "Değer", type: "text" },
@@ -267,6 +250,7 @@ export const playerReview = defineTemplate<PlayerReviewData>({
     position: "OOS (M)",
     photo: "",
     age: "19",
+    nation: "tr",
     nationality: "Türkiye",
     foot: "Sol",
     height: "1.78 m",

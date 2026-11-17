@@ -171,6 +171,7 @@ const row = (team: string, won: number, drawn: number, lost: number, diff: numbe
 export const leagueTable = defineTemplate<LeagueTableData>({
   id: "league-table",
   name: "Puan Tablosu",
+  category: "Maç ve Lig",
   description: "Lig sıralaması, bölgeler ve form",
   icon: Trophy,
   Component: LeagueTableCard,

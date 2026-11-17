@@ -1,7 +1,7 @@
 import { Goal, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
-import { CardFrame, Crest, Label, Panel } from "../frame";
+import { CardFrame, Crest, Label, Panel, toNumber } from "../frame";
 import type { Layout, TemplateProps } from "../types";
 
 type MatchStat = { label: string; home: string; away: string };
@@ -26,8 +26,6 @@ type MatchResultData = {
 };
 
 const STAT_ROWS: Record<Layout, number> = { portrait: 5, square: 4, story: 6, wide: 6 };
-
-const toNumber = (value: string) => Number.parseFloat(value.replace(",", ".").replace(/[^0-9.]/g, "")) || 0;
 
 function Team({ name, code, logo, crestClass }: { name: string; code: string; logo: string; crestClass: string }) {
   return (
@@ -158,6 +156,7 @@ function MatchResultCard({ data, format, brand }: TemplateProps<MatchResultData>
 export const matchResult = defineTemplate<MatchResultData>({
   id: "match-result",
   name: "Maç Sonucu",
+  category: "Maç ve Lig",
   description: "Skor, gol atanlar ve istatistikler",
   icon: Goal,
   Component: MatchResultCard,

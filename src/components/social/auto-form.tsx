@@ -2,6 +2,7 @@
 
 import { ChevronDown, ChevronUp, ImagePlus, Plus, Trash2, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { COUNTRIES } from "./countries";
 import type { DataRecord, Field, FieldValue, ItemField } from "./types";
 
 const INPUT =
@@ -10,6 +11,7 @@ const INPUT =
 const ITEM_SIZE: Record<NonNullable<ItemField["size"]>, string> = {
   xs: "w-12 shrink-0",
   sm: "w-20 shrink-0",
+  md: "w-28 shrink-0",
   grow: "min-w-24 flex-1",
 };
 
@@ -22,6 +24,31 @@ async function readImage(file: File, maxSize = 1000): Promise<string> {
   canvas.height = Math.round(bitmap.height * scale);
   canvas.getContext("2d")?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
   return canvas.toDataURL("image/webp", 0.9);
+}
+
+function CountrySelect({
+  id,
+  label,
+  value,
+  onChange,
+  className,
+}: {
+  id?: string;
+  label: string;
+  value: string;
+  onChange: (next: string) => void;
+  className?: string;
+}) {
+  return (
+    <select id={id} aria-label={label} title={label} value={value} onChange={(e) => onChange(e.target.value)} className={className}>
+      <option value="">— {label}</option>
+      {COUNTRIES.map((country) => (
+        <option key={country.code} value={country.code}>
+          {country.name}
+        </option>
+      ))}
+    </select>
+  );
 }
 
 function blankItem(fields: ItemField[]): DataRecord {
@@ -53,7 +80,16 @@ function ListEditor({
         <div key={index} className="flex items-center gap-1">
           <span className="w-5 shrink-0 text-right text-xs text-muted-foreground tabular-nums">{index + 1}</span>
           <div className="flex min-w-0 flex-1 flex-wrap gap-1">
-            {field.fields.map((sub) => (
+            {field.fields.map((sub) =>
+              sub.type === "country" ? (
+                <CountrySelect
+                  key={sub.key}
+                  label={sub.label}
+                  value={String(item[sub.key] ?? "")}
+                  onChange={(next) => update(index, sub.key, next)}
+                  className={cn(INPUT, "h-8 px-1", ITEM_SIZE[sub.size ?? "md"])}
+                />
+              ) : (
               <input
                 key={sub.key}
                 aria-label={sub.label}
@@ -68,7 +104,8 @@ function ListEditor({
                 }
                 className={cn(INPUT, "h-8 px-2", ITEM_SIZE[sub.size ?? "grow"])}
               />
-            ))}
+              ),
+            )}
           </div>
           <div className="flex shrink-0 text-muted-foreground">
             <button type="button" aria-label="Yukarı taşı" onClick={() => move(index, -1)} className="rounded p-0.5 hover:bg-accent hover:text-foreground">
@@ -144,7 +181,8 @@ export function AutoForm({ fields, value, onChange }: AutoFormProps) {
     <div className="grid grid-cols-2 gap-x-3 gap-y-4">
       {fields.map((field) => {
         const current = value[field.key];
-        const half = field.type === "text" || field.type === "number";
+        const half =
+          field.type === "text" || field.type === "number" || field.type === "select" || field.type === "country";
         const id = `field-${field.key}`;
         return (
           <div key={field.key} className={cn("min-w-0", half ? "col-span-1" : "col-span-2")}>
@@ -164,6 +202,16 @@ export function AutoForm({ fields, value, onChange }: AutoFormProps) {
                 onChange={(e) => set(field.key, Number(e.target.value))}
                 className={cn(INPUT, "h-9")}
               />
+            ) : field.type === "select" ? (
+              <select id={id} value={String(current ?? "")} onChange={(e) => set(field.key, e.target.value)} className={cn(INPUT, "h-9")}>
+                {field.options.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            ) : field.type === "country" ? (
+              <CountrySelect id={id} label={field.label} value={String(current ?? "")} onChange={(next) => set(field.key, next)} className={cn(INPUT, "h-9")} />
             ) : field.type === "textarea" ? (
               <textarea id={id} rows={3} value={String(current ?? "")} onChange={(e) => set(field.key, e.target.value)} className={cn(INPUT, "py-2")} />
             ) : field.type === "lines" ? (

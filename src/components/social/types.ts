@@ -38,15 +38,16 @@ export type DataRecord = { [key: string]: FieldValue };
 type BaseField = { key: string; label: string; hint?: string };
 
 export type ItemField = BaseField & {
-  type: "text" | "number";
+  type: "text" | "number" | "country";
   /** Width of the input inside a list row. */
-  size?: "xs" | "sm" | "grow";
+  size?: "xs" | "sm" | "md" | "grow";
   min?: number;
   max?: number;
 };
 
 export type Field =
-  | (BaseField & { type: "text" | "textarea" | "image" | "lines" })
+  | (BaseField & { type: "text" | "textarea" | "image" | "lines" | "country" })
+  | (BaseField & { type: "select"; options: { value: string; label: string }[] })
   | (BaseField & { type: "number"; min?: number; max?: number; step?: number })
   | (BaseField & { type: "list"; itemLabel: string; fields: ItemField[] });
 
@@ -56,9 +57,12 @@ export type TemplateProps<T> = {
   brand: Brand;
 };
 
+export type Category = "Oyuncu" | "Kadro ve Taktik" | "Maç ve Lig" | "İçerik";
+
 export type TemplateDefinition = {
   id: string;
   name: string;
+  category: Category;
   description: string;
   icon: LucideIcon;
   fields: Field[];

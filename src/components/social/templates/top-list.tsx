@@ -1,10 +1,10 @@
 import { ListOrdered } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
-import { CardFrame, chunk } from "../frame";
+import { CardFrame, Flag, chunk } from "../frame";
 import type { Layout, TemplateProps } from "../types";
 
-type ListItem = { name: string; detail: string; value: string };
+type ListItem = { name: string; nation: string; detail: string; value: string };
 
 type TopListData = {
   tag: string;
@@ -60,7 +60,10 @@ function TopListCard({ data, format, brand }: TemplateProps<TopListData>) {
                       {String(rank).padStart(2, "0")}
                     </span>
                     <span className="min-w-0 flex-1">
-                      <span className="block truncate leading-[1.15] font-semibold">{item.name}</span>
+                      <span className="flex items-center gap-[0.4em] leading-[1.15] font-semibold">
+                        <Flag code={item.nation} className="h-[0.7em]" />
+                        <span className="truncate">{item.name}</span>
+                      </span>
                       <span className="block truncate text-[0.72em] leading-[1.25] text-fm-muted">{item.detail}</span>
                     </span>
                     <span
@@ -85,6 +88,7 @@ function TopListCard({ data, format, brand }: TemplateProps<TopListData>) {
 export const topList = defineTemplate<TopListData>({
   id: "top-list",
   name: "Liste / Sıralama",
+  category: "İçerik",
   description: "Wonderkid, kelepir, gol krallığı…",
   icon: ListOrdered,
   Component: TopListCard,
@@ -99,6 +103,7 @@ export const topList = defineTemplate<TopListData>({
       type: "list",
       itemLabel: "Madde",
       fields: [
+        { key: "nation", label: "Ülke", type: "country", size: "md" },
         { key: "name", label: "İsim", type: "text", size: "grow" },
         { key: "detail", label: "Detay", type: "text", size: "grow" },
         { key: "value", label: "Değer", type: "text", size: "sm" },
@@ -111,16 +116,16 @@ export const topList = defineTemplate<TopListData>({
     subtitle: "21 yaş altı · Orta saha ve hücum",
     valueLabel: "Bonservis",
     items: [
-      { name: "Kerem Aydın", detail: "Göztepe · OOS (M) · 19", value: "€14.5M" },
-      { name: "Mateo Ferreyra", detail: "Vélez · FV (M) · 18", value: "€9M" },
-      { name: "Lucas Brandt", detail: "Freiburg · OS (M) · 20", value: "€22M" },
-      { name: "Ibrahima Sané", detail: "Metz · OK (SĞ) · 18", value: "€6.5M" },
-      { name: "Tiago Varela", detail: "Braga · SF (M) · 19", value: "€11M" },
-      { name: "Emre Soylu", detail: "Altınordu · DOS · 17", value: "€2.8M" },
-      { name: "Nils Åkesson", detail: "Malmö · OK (SL) · 19", value: "€4M" },
-      { name: "Javi Morales", detail: "Betis · OS (M) · 20", value: "€18M" },
-      { name: "Kofi Mensah", detail: "Nordsjælland · SF (M) · 18", value: "€5.5M" },
-      { name: "Dario Kovač", detail: "Dinamo Zagreb · OOS (M) · 19", value: "€8M" },
+      { name: "Kerem Aydın", nation: "tr", detail: "Göztepe · OOS (M) · 19", value: "€14.5M" },
+      { name: "Mateo Ferreyra", nation: "ar", detail: "Vélez · FV (M) · 18", value: "€9M" },
+      { name: "Lucas Brandt", nation: "de", detail: "Freiburg · OS (M) · 20", value: "€22M" },
+      { name: "Ibrahima Sané", nation: "sn", detail: "Metz · OK (SĞ) · 18", value: "€6.5M" },
+      { name: "Tiago Varela", nation: "pt", detail: "Braga · SF (M) · 19", value: "€11M" },
+      { name: "Emre Soylu", nation: "tr", detail: "Altınordu · DOS · 17", value: "€2.8M" },
+      { name: "Nils Åkesson", nation: "se", detail: "Malmö · OK (SL) · 19", value: "€4M" },
+      { name: "Javi Morales", nation: "es", detail: "Betis · OS (M) · 20", value: "€18M" },
+      { name: "Kofi Mensah", nation: "gh", detail: "Nordsjælland · SF (M) · 18", value: "€5.5M" },
+      { name: "Dario Kovač", nation: "hr", detail: "Dinamo Zagreb · OOS (M) · 19", value: "€8M" },
     ],
   },
 });

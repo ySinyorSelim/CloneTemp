@@ -1,6 +1,6 @@
 import type { ComponentType } from "react";
 import type { LucideIcon } from "lucide-react";
-import type { DataRecord, Field, TemplateDefinition, TemplateProps } from "./types";
+import type { Category, DataRecord, Field, TemplateDefinition, TemplateProps } from "./types";
 
 /**
  * Registers a template. Each template brings its own typed data shape, the
@@ -9,6 +9,7 @@ import type { DataRecord, Field, TemplateDefinition, TemplateProps } from "./typ
 export function defineTemplate<T extends DataRecord>(def: {
   id: string;
   name: string;
+  category: Category;
   description: string;
   icon: LucideIcon;
   fields: Field[];
