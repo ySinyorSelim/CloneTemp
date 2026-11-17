@@ -23,13 +23,27 @@ export type Theme = {
   label: string;
   /** Static Tailwind classes for the swatch in the studio UI. */
   swatchClass: string;
+  /** Same colours as the CSS block, used as the starting point for a custom palette. */
+  palette: Palette;
 };
 
-export type Brand = {
+export type HeadingFont = "archivo" | "sora" | "space-grotesk" | "montserrat" | "oswald" | "bebas-neue" | "anton";
+export type BodyFont = "geist" | "inter" | "manrope" | "dm-sans";
+
+export type Palette = { colorBg: string; colorSurface: string; colorText: string; colorAccent: string };
+
+export type Brand = Palette & {
   name: string;
   handle: string;
   footnote: string;
-  theme: ThemeId;
+  /** Uploaded logo shown in the header instead of the default mark. */
+  logo: string;
+  theme: ThemeId | "custom";
+  headingFont: HeadingFont;
+  bodyFont: BodyFont;
+  /** Optional photo behind the whole card, and how strongly it is dimmed. */
+  background: string;
+  backgroundDim: "light" | "medium" | "strong";
 };
 
 export type FieldValue = string | number | string[] | DataRecord[];
@@ -46,7 +60,7 @@ export type ItemField = BaseField & {
 };
 
 export type Field =
-  | (BaseField & { type: "text" | "textarea" | "image" | "lines" | "country" })
+  | (BaseField & { type: "text" | "textarea" | "image" | "lines" | "country" | "color" })
   | (BaseField & { type: "select"; options: { value: string; label: string }[] })
   | (BaseField & { type: "number"; min?: number; max?: number; step?: number })
   | (BaseField & { type: "list"; itemLabel: string; fields: ItemField[] });

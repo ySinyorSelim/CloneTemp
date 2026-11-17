@@ -1,8 +1,8 @@
 /* eslint-disable @next/next/no-img-element -- cards are rasterised client-side; next/image would break export */
 import { Star, User } from "lucide-react";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/utils";
-import { FRAME_CLASS } from "./formats";
+import { DIM_CLASS, FRAME_CLASS, luminance } from "./formats";
 import type { Brand, Format, Layout } from "./types";
 
 type CardFrameProps = {
@@ -12,25 +12,52 @@ type CardFrameProps = {
   children: ReactNode;
 };
 
+/** Inline variables for a user-defined palette; preset themes live in globals.css. */
+function customPalette(brand: Brand): CSSProperties | undefined {
+  if (brand.theme !== "custom") return undefined;
+  const lightBackground = luminance(brand.colorBg) > 0.4;
+  return {
+    "--fm-bg": brand.colorBg,
+    "--fm-surface": brand.colorSurface,
+    "--fm-text": brand.colorText,
+    "--fm-accent": brand.colorAccent,
+    "--fm-on-accent": luminance(brand.colorAccent) > 0.35 ? "#0b0f14" : "#ffffff",
+    ...(lightBackground ? { "--fm-good": "#17804f", "--fm-warn": "#c77a00", "--fm-bad": "#d43d3d" } : {}),
+  } as CSSProperties;
+}
+
 /** Shared shell of every card: background, brand header, footer. */
 export function CardFrame({ format, brand, tag, children }: CardFrameProps) {
   return (
     <div
       lang="tr"
       data-fm-theme={brand.theme}
+      data-fm-heading={brand.headingFont}
+      data-fm-body={brand.bodyFont}
+      style={customPalette(brand)}
       className={cn(
         "relative flex shrink-0 flex-col overflow-hidden bg-fm-bg font-sans text-fm-text antialiased",
         FRAME_CLASS[format.id],
       )}
     >
+      {brand.background ? (
+        <>
+          <img src={brand.background} alt="" className="absolute inset-0 size-full object-cover" />
+          <div className={cn("absolute inset-0 bg-fm-bg", DIM_CLASS[brand.backgroundDim] ?? DIM_CLASS.medium)} />
+        </>
+      ) : null}
       <div className="fm-card-glow pointer-events-none absolute inset-0" />
       <div className="fm-card-grid pointer-events-none absolute inset-0" />
 
       <header className="relative flex items-center justify-between gap-6">
         <div className="flex items-center gap-4">
-          <span className="grid size-[44px] place-items-center rounded-[12px] bg-fm-accent">
-            <span className="size-[16px] rotate-45 rounded-[3px] bg-fm-on-accent" />
-          </span>
+          {brand.logo ? (
+            <img src={brand.logo} alt="" className="h-[48px] w-auto max-w-[160px] object-contain" />
+          ) : (
+            <span className="grid size-[44px] place-items-center rounded-[12px] bg-fm-accent">
+              <span className="size-[16px] rotate-45 rounded-[3px] bg-fm-on-accent" />
+            </span>
+          )}
           <span className="fm-display text-[26px] tracking-normal">{brand.name}</span>
         </div>
         {tag ? (

@@ -2,11 +2,11 @@
 
 import { zipSync } from "fflate";
 import { toBlob } from "html-to-image";
-import { Check, Download, LayoutGrid, Loader2, RotateCcw } from "lucide-react";
+import { Check, Download, LayoutGrid, Loader2, Palette, RotateCcw } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { cn } from "@/lib/utils";
 import { AutoForm } from "./auto-form";
-import { FORMATS, THEMES, getFormat } from "./formats";
+import { BODY_FONTS, FORMATS, HEADING_FONTS, THEMES, getFormat } from "./formats";
 import { TEMPLATES } from "./templates";
 import type { Brand, Category, DataRecord, Format, FormatId } from "./types";
 
@@ -30,7 +30,18 @@ const DEFAULT_STATE: StudioState = {
   formatId: "ig-portrait",
   showAll: false,
   exportIds: ["ig-portrait", "x-landscape"],
-  brand: { name: "FM Atölye", handle: "@fmatolye", footnote: "Football Manager 26", theme: "night" },
+  brand: {
+    name: "FM Atölye",
+    handle: "@fmatolye",
+    footnote: "Football Manager 26",
+    logo: "",
+    theme: "night",
+    ...THEMES[0].palette,
+    headingFont: "archivo",
+    bodyFont: "geist",
+    background: "",
+    backgroundDim: "medium",
+  },
   data: {},
 };
 
@@ -303,16 +314,16 @@ export function Studio() {
           </div>
 
           <div>
-            <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Marka</h2>
-            <div className="mb-3 flex gap-2">
+            <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Renk paleti</h2>
+            <div className="mb-3 grid grid-cols-3 gap-2">
               {THEMES.map((theme) => (
                 <button
                   key={theme.id}
                   type="button"
                   aria-pressed={theme.id === state.brand.theme}
-                  onClick={() => setBrand({ theme: theme.id })}
+                  onClick={() => setBrand({ theme: theme.id, ...theme.palette })}
                   className={cn(
-                    "flex h-11 flex-1 flex-col items-center justify-center rounded-lg border text-xs font-semibold transition",
+                    "flex h-10 items-center justify-center rounded-lg border text-xs font-semibold transition",
                     theme.swatchClass,
                     theme.id === state.brand.theme ? "border-foreground ring-2 ring-foreground/40" : "border-border",
                   )}
@@ -320,12 +331,57 @@ export function Studio() {
                   {theme.label}
                 </button>
               ))}
+              <button
+                type="button"
+                aria-pressed={state.brand.theme === "custom"}
+                onClick={() => setBrand({ theme: "custom" })}
+                className={cn(
+                  "flex h-10 items-center justify-center gap-1.5 rounded-lg border text-xs font-semibold transition",
+                  state.brand.theme === "custom" ? "border-foreground ring-2 ring-foreground/40" : "border-border",
+                )}
+              >
+                <Palette className="size-3.5" /> Özel
+              </button>
             </div>
+            {state.brand.theme === "custom" ? (
+              <AutoForm
+                fields={[
+                  { key: "colorAccent", label: "Vurgu rengi", type: "color" },
+                  { key: "colorBg", label: "Arka plan", type: "color" },
+                  { key: "colorSurface", label: "Kutu rengi", type: "color" },
+                  { key: "colorText", label: "Yazı rengi", type: "color" },
+                ]}
+                value={state.brand}
+                onChange={(next) => setBrand(next as Partial<Brand>)}
+              />
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Kendi renklerin için &quot;Özel&quot;e bas; seçili paletten başlar.
+              </p>
+            )}
+          </div>
+
+          <div>
+            <h2 className="mb-2 text-xs font-semibold tracking-wider text-muted-foreground uppercase">Yazı tipi ve marka</h2>
             <AutoForm
               fields={[
+                { key: "headingFont", label: "Başlık yazı tipi", type: "select", options: HEADING_FONTS },
+                { key: "bodyFont", label: "Metin yazı tipi", type: "select", options: BODY_FONTS },
                 { key: "name", label: "Hesap adı", type: "text" },
                 { key: "handle", label: "Kullanıcı adı", type: "text" },
                 { key: "footnote", label: "Alt bilgi (sağ alt)", type: "text" },
+                {
+                  key: "backgroundDim",
+                  label: "Arka plan karartma",
+                  type: "select",
+                  options: [
+                    { value: "light", label: "Hafif" },
+                    { value: "medium", label: "Orta" },
+                    { value: "strong", label: "Koyu" },
+                  ],
+                },
+                { key: "logo", label: "Logo (sol üst)", type: "image" },
+                { key: "background", label: "Arka plan görseli", type: "image", hint: "Tüm kartın arkasına yerleşir; okunurluk için karartılır." },
               ]}
               value={state.brand}
               onChange={(next) => setBrand(next as Partial<Brand>)}

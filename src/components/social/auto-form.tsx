@@ -16,7 +16,7 @@ const ITEM_SIZE: Record<NonNullable<ItemField["size"]>, string> = {
 };
 
 /** Downscale uploads so they stay small enough for localStorage; keeps transparency. */
-async function readImage(file: File, maxSize = 1000): Promise<string> {
+async function readImage(file: File, maxSize = 1400): Promise<string> {
   const bitmap = await createImageBitmap(file);
   const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement("canvas");
@@ -182,7 +182,11 @@ export function AutoForm({ fields, value, onChange }: AutoFormProps) {
       {fields.map((field) => {
         const current = value[field.key];
         const half =
-          field.type === "text" || field.type === "number" || field.type === "select" || field.type === "country";
+          field.type === "text" ||
+          field.type === "number" ||
+          field.type === "select" ||
+          field.type === "country" ||
+          field.type === "color";
         const id = `field-${field.key}`;
         return (
           <div key={field.key} className={cn("min-w-0", half ? "col-span-1" : "col-span-2")}>
@@ -212,6 +216,17 @@ export function AutoForm({ fields, value, onChange }: AutoFormProps) {
               </select>
             ) : field.type === "country" ? (
               <CountrySelect id={id} label={field.label} value={String(current ?? "")} onChange={(next) => set(field.key, next)} className={cn(INPUT, "h-9")} />
+            ) : field.type === "color" ? (
+              <div className="flex gap-2">
+                <input
+                  type="color"
+                  aria-label={field.label}
+                  value={/^#[0-9a-f]{6}$/i.test(String(current)) ? String(current) : "#000000"}
+                  onChange={(e) => set(field.key, e.target.value)}
+                  className="h-9 w-11 shrink-0 cursor-pointer rounded-md border border-input bg-background p-1"
+                />
+                <input id={id} value={String(current ?? "")} onChange={(e) => set(field.key, e.target.value)} className={cn(INPUT, "h-9 font-mono")} />
+              </div>
             ) : field.type === "textarea" ? (
               <textarea id={id} rows={3} value={String(current ?? "")} onChange={(e) => set(field.key, e.target.value)} className={cn(INPUT, "py-2")} />
             ) : field.type === "lines" ? (

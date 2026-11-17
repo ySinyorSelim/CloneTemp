@@ -201,12 +201,66 @@
 }
 
 .fm-display {
-  font-family: var(--font-display);
-  font-stretch: 125%;
-  font-weight: 800;
+  font-family: var(--fm-display-font, var(--font-display));
+  font-stretch: var(--fm-display-stretch, 125%);
+  font-weight: var(--fm-display-weight, 800);
   text-transform: uppercase;
-  letter-spacing: -0.02em;
-  line-height: 0.95;
+  letter-spacing: var(--fm-display-tracking, -0.02em);
+  line-height: var(--fm-display-leading, 0.95);
+}
+
+/* Heading fonts (Brand.headingFont). Archivo expanded is the default. */
+[data-fm-heading="sora"] {
+  --fm-display-font: var(--font-sora), sans-serif;
+  --fm-display-stretch: 100%;
+}
+[data-fm-heading="space-grotesk"] {
+  --fm-display-font: var(--font-space-grotesk), sans-serif;
+  --fm-display-stretch: 100%;
+  --fm-display-weight: 700;
+}
+[data-fm-heading="montserrat"] {
+  --fm-display-font: var(--font-montserrat), sans-serif;
+  --fm-display-stretch: 100%;
+  --fm-display-weight: 900;
+}
+[data-fm-heading="oswald"] {
+  --fm-display-font: var(--font-oswald), sans-serif;
+  --fm-display-stretch: 100%;
+  --fm-display-weight: 700;
+  --fm-display-tracking: 0;
+  --fm-display-leading: 1.02;
+}
+[data-fm-heading="bebas-neue"] {
+  --fm-display-font: var(--font-bebas-neue), sans-serif;
+  --fm-display-stretch: 100%;
+  --fm-display-weight: 400;
+  --fm-display-tracking: 0.01em;
+  --fm-display-leading: 0.98;
+}
+[data-fm-heading="anton"] {
+  --fm-display-font: var(--font-anton), sans-serif;
+  --fm-display-stretch: 100%;
+  --fm-display-weight: 400;
+  --fm-display-tracking: 0.01em;
+  --fm-display-leading: 1.08;
+}
+
+/* Body fonts (Brand.bodyFont). Geist is the default. */
+[data-fm-body="inter"] {
+  font-family: var(--font-inter), sans-serif;
+}
+[data-fm-body="manrope"] {
+  font-family: var(--font-manrope), sans-serif;
+}
+[data-fm-body="dm-sans"] {
+  font-family: var(--font-dm-sans), sans-serif;
+}
+
+/* Custom palette: the four base colours arrive as inline variables, the rest is derived. */
+[data-fm-theme="custom"] {
+  --fm-muted: color-mix(in oklab, var(--fm-text) 58%, var(--fm-bg));
+  --fm-line: color-mix(in srgb, var(--fm-text) 11%, transparent);
 }
 
 .fm-label {
