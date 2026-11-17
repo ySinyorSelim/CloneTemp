@@ -128,3 +128,112 @@
     @apply font-sans;
   }
 }
+
+/* ───────────── Social card templates (FM paylaşım şablonları) ───────────── */
+
+@theme inline {
+  --font-display: var(--font-archivo), "Geist", ui-sans-serif, system-ui, sans-serif;
+  --color-fm-bg: var(--fm-bg);
+  --color-fm-surface: var(--fm-surface);
+  --color-fm-line: var(--fm-line);
+  --color-fm-text: var(--fm-text);
+  --color-fm-muted: var(--fm-muted);
+  --color-fm-accent: var(--fm-accent);
+  --color-fm-on-accent: var(--fm-on-accent);
+  --color-fm-good: var(--fm-good);
+  --color-fm-warn: var(--fm-warn);
+  --color-fm-bad: var(--fm-bad);
+}
+
+/* To add a theme: copy a block, change the values, register it in formats.ts. */
+[data-fm-theme] {
+  --fm-good: #3ddc84;
+  --fm-warn: #ffb020;
+  --fm-bad: #ff5c5c;
+}
+[data-fm-theme="night"] {
+  --fm-bg: #0b0f14;
+  --fm-surface: #141b24;
+  --fm-line: rgb(255 255 255 / 0.09);
+  --fm-text: #f2f5f7;
+  --fm-muted: #8c99a8;
+  --fm-accent: #c8f53a;
+  --fm-on-accent: #0b0f14;
+}
+[data-fm-theme="violet"] {
+  --fm-bg: #0e0b1c;
+  --fm-surface: #18142c;
+  --fm-line: rgb(255 255 255 / 0.09);
+  --fm-text: #f4f2ff;
+  --fm-muted: #9a94b8;
+  --fm-accent: #9d8cff;
+  --fm-on-accent: #0e0b1c;
+}
+[data-fm-theme="ember"] {
+  --fm-bg: #130d0b;
+  --fm-surface: #1f1613;
+  --fm-line: rgb(255 255 255 / 0.09);
+  --fm-text: #fbf4f0;
+  --fm-muted: #a8968d;
+  --fm-accent: #ff7a45;
+  --fm-on-accent: #130d0b;
+}
+[data-fm-theme="ice"] {
+  --fm-bg: #06131a;
+  --fm-surface: #0e1f29;
+  --fm-line: rgb(255 255 255 / 0.09);
+  --fm-text: #eef8fb;
+  --fm-muted: #84a0ad;
+  --fm-accent: #45d9f7;
+  --fm-on-accent: #06131a;
+}
+[data-fm-theme="paper"] {
+  --fm-bg: #f3f1ea;
+  --fm-surface: #ffffff;
+  --fm-line: rgb(20 24 28 / 0.1);
+  --fm-text: #14181c;
+  --fm-muted: #6a727c;
+  --fm-accent: #17804f;
+  --fm-on-accent: #ffffff;
+  --fm-good: #17804f;
+  --fm-warn: #c77a00;
+  --fm-bad: #d43d3d;
+}
+
+.fm-display {
+  font-family: var(--font-display);
+  font-stretch: 125%;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+  line-height: 0.95;
+}
+
+.fm-label {
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.fm-card-glow {
+  background:
+    radial-gradient(60% 45% at 100% 0%, color-mix(in oklab, var(--fm-accent) 20%, transparent), transparent 70%),
+    radial-gradient(55% 35% at 0% 100%, color-mix(in oklab, var(--fm-accent) 9%, transparent), transparent 70%);
+}
+
+.fm-card-grid {
+  background-image:
+    linear-gradient(var(--fm-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--fm-line) 1px, transparent 1px);
+  background-size: 54px 54px;
+  mask-image: radial-gradient(ellipse 75% 60% at 100% 0%, black, transparent 75%);
+}
+
+.fm-pitch {
+  --stripe: color-mix(in oklab, var(--fm-accent) 7%, var(--fm-surface));
+  background: repeating-linear-gradient(0deg, var(--stripe) 0 10%, var(--fm-surface) 10% 20%);
+}
+.fm-pitch-wide {
+  --stripe: color-mix(in oklab, var(--fm-accent) 7%, var(--fm-surface));
+  background: repeating-linear-gradient(90deg, var(--stripe) 0 10%, var(--fm-surface) 10% 20%);
+}
