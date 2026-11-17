@@ -1,7 +1,7 @@
 "use client";
 
 import { ImageUp } from "lucide-react";
-import { createContext, useContext } from "react";
+import { createContext, useContext, useState } from "react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
@@ -27,12 +27,49 @@ type UploadTargetProps = {
   className?: string;
   /** Short hint shown on hover; sized in card pixels. */
   hintClass?: string;
+  /** Only react to dropped files (no click, no hover overlay) — for areas that already show content. */
+  dropOnly?: boolean;
   children: ReactNode;
 };
 
-export function UploadTarget({ path, className, hintClass = "text-[20px]", children }: UploadTargetProps) {
+export function UploadTarget({ path, className, hintClass = "text-[20px]", dropOnly, children }: UploadTargetProps) {
   const editor = useImageEditor();
+  const [dragging, setDragging] = useState(false);
   if (!editor || !path) return <div className={className}>{children}</div>;
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const file = e.dataTransfer.files[0];
+    if (file?.type.startsWith("image/")) editor.drop(path, file);
+  };
+
+  if (dropOnly) {
+    return (
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragging(true);
+        }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={onDrop}
+        className={className}
+      >
+        {children}
+        {dragging ? (
+          <span
+            className={cn(
+              "pointer-events-none absolute inset-0 z-10 grid place-content-center justify-items-center gap-3 rounded-[28px] border-4 border-dashed border-white/80 bg-black/70 font-semibold text-white",
+              hintClass,
+            )}
+          >
+            <ImageUp className="size-[2em]" />
+            Buraya bırak
+          </span>
+        ) : null}
+      </div>
+    );
+  }
+
   return (
     <div
       role="button"
@@ -43,11 +80,7 @@ export function UploadTarget({ path, className, hintClass = "text-[20px]", child
         if (e.key === "Enter" || e.key === " ") editor.pick(path);
       }}
       onDragOver={(e) => e.preventDefault()}
-      onDrop={(e) => {
-        e.preventDefault();
-        const file = e.dataTransfer.files[0];
-        if (file?.type.startsWith("image/")) editor.drop(path, file);
-      }}
+      onDrop={onDrop}
       className={cn("group/upload cursor-pointer", className)}
     >
       {children}

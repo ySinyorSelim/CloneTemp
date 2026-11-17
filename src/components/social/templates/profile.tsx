@@ -1,7 +1,8 @@
 import { Award, BadgeCheck, Binoculars, Check, UserPlus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
-import { AttributeRows, CardFrame, Flag, Label, Panel, Photo, nameSize } from "../frame";
+import { UploadTarget } from "../edit-context";
+import { AttributeRows, CardFrame, Flag, Label, Panel, Photo, Screenshot, StarValue, nameSize } from "../frame";
 import type { Attribute } from "../frame";
 import type { Field, Layout, TemplateProps } from "../types";
 
@@ -15,6 +16,8 @@ type ProfileData = {
   role: string;
   subtitle: string;
   photo: string;
+  profileShot: string;
+  shotFit: string;
   priceLabel: string;
   price: string;
   facts: Fact[];
@@ -58,14 +61,18 @@ function ProfileCard({ data, format, brand }: TemplateProps<ProfileData>) {
         {data.facts.slice(0, 5).map((fact, i) => (
           <div key={i} className="min-w-0 flex-1 px-5">
             <Label className="block truncate text-[15px]">{fact.label}</Label>
-            <p className="mt-1 truncate text-[26px] font-semibold">{fact.value}</p>
+            <p className="mt-1 truncate text-[26px] font-semibold">
+              <StarValue value={fact.value} />
+            </p>
           </div>
         ))}
       </Panel>
     ) : null;
 
-  const columns = (
-    <div className="grid min-h-0 flex-1 grid-cols-2 gap-4">
+  const columns = data.profileShot ? (
+    <Screenshot src={data.profileShot} path="profileShot" fit={data.shotFit} className="flex-1" />
+  ) : (
+    <UploadTarget path="profileShot" dropOnly hintClass="text-[28px]" className="relative grid min-h-0 flex-1 grid-cols-2 gap-4">
       <Panel className="flex flex-col justify-center px-6 py-4">
         <Label className="mb-2 text-fm-accent">{data.attributesTitle}</Label>
         <AttributeRows items={data.attributes} rows={ATTRIBUTE_ROWS[layout]} barClass="w-[90px]" />
@@ -83,7 +90,7 @@ function ProfileCard({ data, format, brand }: TemplateProps<ProfileData>) {
           ))}
         </ul>
       </Panel>
-    </div>
+    </UploadTarget>
   );
 
   const summary = data.summary ? (
@@ -146,6 +153,21 @@ const fields: Field[] = [
   { key: "nation", label: "Bayrak", type: "country" },
   { key: "subtitle", label: "Alt satır", type: "text" },
   { key: "photo", label: "Fotoğraf", type: "image" },
+  {
+    key: "profileShot",
+    label: "FM profil ekran görüntüsü",
+    type: "image",
+    hint: "Önizlemede özellik kutularının üstüne sürükleyip bırak ya da Ctrl+V ile yapıştır; kutuların yerine sabitlenir.",
+  },
+  {
+    key: "shotFit",
+    label: "Ekran görüntüsü yerleşimi",
+    type: "select",
+    options: [
+    { value: "contain", label: "Tamamı görünsün" },
+    { value: "cover", label: "Alanı doldursun (kenarlar kırpılır)" },
+    ],
+  },
   { key: "priceLabel", label: "Vurgu başlığı", type: "text" },
   { key: "price", label: "Vurgu değeri", type: "text" },
   {
@@ -189,6 +211,8 @@ export const playerRecommendation = defineTemplate<ProfileData>({
     role: "FV (M) · Kelepir",
     subtitle: "Vélez Sarsfield · 18 yaş",
     photo: "",
+    profileShot: "",
+    shotFit: "contain",
     priceLabel: "Bonservis",
     price: "€9M",
     facts: [
@@ -236,6 +260,8 @@ export const staffRecommendation = defineTemplate<ProfileData>({
     role: "Yardımcı Antrenör",
     subtitle: "Serbest · 44 yaş",
     photo: "",
+    profileShot: "",
+    shotFit: "contain",
     priceLabel: "Beklenen maaş",
     price: "€9K/hf",
     facts: [
@@ -283,6 +309,8 @@ export const award = defineTemplate<ProfileData>({
     role: "Kasım 2026",
     subtitle: "Göztepe · OOS (M)",
     photo: "",
+    profileShot: "",
+    shotFit: "contain",
     priceLabel: "Ortalama puan",
     price: "8.42",
     facts: [
@@ -330,6 +358,8 @@ export const scoutReport = defineTemplate<ProfileData>({
     role: "OK (SĞ) · Keşif",
     subtitle: "Metz · 18 yaş",
     photo: "",
+    profileShot: "",
+    shotFit: "contain",
     priceLabel: "Scout notu",
     price: "A-",
     facts: [

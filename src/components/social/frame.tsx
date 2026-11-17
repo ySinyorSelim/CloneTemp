@@ -103,23 +103,46 @@ export function Label({ className, children }: { className?: string; children: R
   return <span className={cn("fm-label text-[16px] text-fm-muted", className)}>{children}</span>;
 }
 
-/** Five-star rating in half-star steps. */
-export function Stars({ value, className }: { value: number; className?: string }) {
+/**
+ * Five-star rating in half-star steps; a half is drawn as a star that is
+ * filled on the left and empty on the right. `inherit` uses the surrounding
+ * text colour (for stars sitting on an accent background).
+ */
+export function Stars({ value, inherit, className }: { value: number; inherit?: boolean; className?: string }) {
   return (
-    <span className={cn("flex gap-1", className)}>
+    <span className={cn("flex gap-[0.12em]", className)}>
       {[0, 1, 2, 3, 4].map((i) => {
         const fill = value - i >= 1 ? "w-full" : value - i >= 0.5 ? "w-1/2" : "w-0";
         return (
           <span key={i} className="relative size-[1em]">
-            <Star className="size-full fill-fm-line text-transparent" />
+            <Star
+              className={cn("size-full fill-transparent", inherit ? "opacity-70" : "text-fm-muted")}
+              strokeWidth={1.75}
+            />
             <span className={cn("absolute inset-y-0 left-0 overflow-hidden", fill)}>
-              <Star className="size-[1em] fill-fm-accent text-fm-accent" />
+              <Star className={cn("size-[1em]", inherit ? "fill-current" : "fill-fm-accent text-fm-accent")} />
             </span>
           </span>
         );
       })}
     </span>
   );
+}
+
+/** "★★★★½", "4.5*" or "4,5 yıldız" → 4.5; anything else → null. */
+export function parseStars(value: string): number | null {
+  const text = value.trim();
+  if (/^[★☆½\s]+$/.test(text) && /[★½]/.test(text)) {
+    return Math.min(5, (text.match(/★/g)?.length ?? 0) + (text.includes("½") ? 0.5 : 0));
+  }
+  const numeric = /^([0-5](?:[.,]5)?)\s*(?:\*|★|yıldız)$/i.exec(text);
+  return numeric ? Number(numeric[1].replace(",", ".")) : null;
+}
+
+/** Shows a value as text, or as drawn stars when it is a star rating. */
+export function StarValue({ value, inherit }: { value: string; inherit?: boolean }) {
+  const stars = parseStars(value);
+  return stars === null ? <>{value}</> : <Stars value={stars} inherit={inherit} className="inline-flex align-middle text-[0.95em]" />;
 }
 
 /** Uploaded picture, or a neutral placeholder when empty. `path` makes it clickable in the preview. */
@@ -175,7 +198,18 @@ export function Crest({ src, code, path, className }: { src: string; code: strin
 }
 
 /** Framed game screenshot (e.g. the FM player profile screen), shown uncropped. */
-export function Screenshot({ src, path, className }: { src: string; path?: string; className?: string }) {
+export function Screenshot({
+  src,
+  path,
+  fit,
+  className,
+}: {
+  src: string;
+  path?: string;
+  /** "cover" fills the frame (edges may be cropped); anything else shows the whole image. */
+  fit?: string;
+  className?: string;
+}) {
   const editing = useImageEditor() !== null;
   return (
     <UploadTarget
@@ -187,7 +221,11 @@ export function Screenshot({ src, path, className }: { src: string; path?: strin
       )}
     >
       {src ? (
-        <img src={src} alt="" className="absolute inset-0 size-full object-contain" />
+        <img
+          src={src}
+          alt=""
+          className={cn("absolute inset-0 size-full", fit === "cover" ? "object-cover object-top" : "object-contain")}
+        />
       ) : (
         <div className="absolute inset-0 grid place-content-center justify-items-center gap-4 text-fm-muted">
           <MonitorUp className="size-[72px]" strokeWidth={1.25} />

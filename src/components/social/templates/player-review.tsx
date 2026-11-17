@@ -1,6 +1,7 @@
 import { Minus, Plus, UserSearch } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
+import { UploadTarget } from "../edit-context";
 import { AttributeRows, CardFrame, Flag, Label, Panel, Photo, Screenshot, Stars, nameSize } from "../frame";
 import type { Attribute } from "../frame";
 import type { Layout, TemplateProps } from "../types";
@@ -12,6 +13,7 @@ type PlayerReviewData = {
   position: string;
   photo: string;
   profileShot: string;
+  shotFit: string;
   age: string;
   nation: string;
   nationality: string;
@@ -104,13 +106,13 @@ function PlayerReviewCard({ data, format, brand }: TemplateProps<PlayerReviewDat
   );
 
   const attributes = data.profileShot ? (
-    <Screenshot src={data.profileShot} path="profileShot" className="min-h-[300px] flex-1" />
+    <Screenshot src={data.profileShot} path="profileShot" fit={data.shotFit} className="min-h-[300px] flex-1" />
   ) : (
-    <div className="flex gap-4">
+    <UploadTarget path="profileShot" dropOnly hintClass="text-[28px]" className="relative flex gap-4">
       <AttributeGroup title="Teknik" items={data.technical} rows={rows} />
       <AttributeGroup title="Zihinsel" items={data.mental} rows={rows} />
       <AttributeGroup title="Fiziksel" items={data.physical} rows={rows} />
-    </div>
+    </UploadTarget>
   );
 
   const prosCons = (
@@ -235,7 +237,16 @@ export const playerReview = defineTemplate<PlayerReviewData>({
       key: "profileShot",
       label: "FM profil ekran görüntüsü",
       type: "image",
-      hint: "Yüklersen özellik tablolarının yerine bu görüntü gelir.",
+      hint: "Önizlemede özellik tablolarının üstüne sürükleyip bırakabilir ya da Ctrl+V ile yapıştırabilirsin; tabloların yerine bu görüntü sabitlenir.",
+    },
+    {
+      key: "shotFit",
+      label: "Ekran görüntüsü yerleşimi",
+      type: "select",
+      options: [
+        { value: "contain", label: "Tamamı görünsün" },
+        { value: "cover", label: "Alanı doldursun (kenarlar kırpılır)" },
+      ],
     },
     { key: "age", label: "Yaş", type: "text" },
     { key: "nation", label: "Bayrak", type: "country" },
@@ -260,6 +271,7 @@ export const playerReview = defineTemplate<PlayerReviewData>({
     position: "OOS (M)",
     photo: "",
     profileShot: "",
+    shotFit: "contain",
     age: "19",
     nation: "tr",
     nationality: "Türkiye",

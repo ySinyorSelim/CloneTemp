@@ -209,6 +209,22 @@ export function Studio() {
     };
   }, [templateId, templateDefaults]);
 
+  // Ctrl+V: a copied screenshot lands in the template's screenshot slot (or its main photo).
+  const pasteTarget = ["profileShot", "shot", "photo", "image"].find((key) =>
+    template.fields.some((field) => field.key === key && field.type === "image"),
+  );
+  useEffect(() => {
+    if (!pasteTarget) return;
+    const onPaste = (event: ClipboardEvent) => {
+      const file = Array.from(event.clipboardData?.files ?? []).find((f) => f.type.startsWith("image/"));
+      if (!file) return;
+      event.preventDefault();
+      void imageEditor.drop(pasteTarget, file);
+    };
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  }, [pasteTarget, imageEditor]);
+
   const exportFormats = FORMATS.filter((f) => state.exportIds.includes(f.id));
   const toggleExport = (id: FormatId) =>
     setState((s) => ({
@@ -414,8 +430,9 @@ export function Studio() {
           )}
         </EditContext.Provider>
         <p className="text-xs text-muted-foreground">
-          İpucu: önizlemedeki fotoğraf, logo ve ekran görüntüsü alanlarına
-          tıklayarak ya da dosyayı üstüne sürükleyerek görsel yükleyebilirsin.
+          İpucu: önizlemedeki fotoğraf, logo ve ekran görüntüsü alanlarına tıklayarak ya da dosyayı üstüne
+          sürükleyerek görsel yükleyebilirsin. FM profil ekran görüntüsünü özellik kutularının üstüne bırakabilir ya da
+          kopyalayıp Ctrl+V ile yapıştırabilirsin.
         </p>
       </section>
 

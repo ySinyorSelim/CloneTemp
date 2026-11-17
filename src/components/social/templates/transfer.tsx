@@ -1,7 +1,7 @@
 import { ArrowRight, ArrowRightLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
-import { CardFrame, Crest, Flag, Label, Panel, Photo, nameSize } from "../frame";
+import { CardFrame, Crest, Flag, Label, Panel, Photo, StarValue, nameSize } from "../frame";
 import type { TemplateProps } from "../types";
 
 type Fact = { label: string; value: string };
@@ -79,7 +79,9 @@ function TransferCard({ data, format, brand }: TemplateProps<TransferData>) {
         {data.facts.slice(0, 4).map((fact, i) => (
           <div key={i} className="min-w-0 flex-1 px-5">
             <Label className="block truncate text-[15px]">{fact.label}</Label>
-            <p className="mt-1 truncate text-[26px] font-semibold">{fact.value}</p>
+            <p className="mt-1 truncate text-[26px] font-semibold">
+              <StarValue value={fact.value} />
+            </p>
           </div>
         ))}
       </Panel>

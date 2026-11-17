@@ -1,7 +1,7 @@
 import { Goal, ListOrdered, Sprout } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
-import { Avatar, CardFrame, Flag, chunk } from "../frame";
+import { Avatar, CardFrame, Flag, StarValue, chunk } from "../frame";
 import type { Layout, TemplateProps } from "../types";
 
 type ListItem = { name: string; nation: string; detail: string; value: string; photo: string };
@@ -73,7 +73,7 @@ function TopListCard({ data, format, brand }: TemplateProps<TopListData>) {
                         rank <= 3 ? "bg-fm-accent text-fm-on-accent" : "bg-fm-line",
                       )}
                     >
-                      {item.value}
+                      <StarValue value={item.value} inherit />
                     </span>
                   </li>
                 );

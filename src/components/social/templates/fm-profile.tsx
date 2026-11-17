@@ -1,7 +1,7 @@
 import { MonitorSmartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { defineTemplate } from "../define";
-import { CardFrame, Flag, Label, Panel, Photo, Screenshot } from "../frame";
+import { CardFrame, Flag, Label, Panel, Photo, Screenshot, StarValue } from "../frame";
 import type { TemplateProps } from "../types";
 
 type Fact = { label: string; value: string };
@@ -14,6 +14,7 @@ type FmProfileData = {
   subtitle: string;
   photo: string;
   shot: string;
+  shotFit: string;
   facts: Fact[];
   comment: string;
 };
@@ -54,14 +55,16 @@ function FmProfileCard({ data, format, brand }: TemplateProps<FmProfileData>) {
                 {data.facts.slice(0, 4).map((fact, i) => (
                   <div key={i} className="min-w-0">
                     <Label className="block truncate text-[14px]">{fact.label}</Label>
-                    <p className="truncate text-[23px] font-semibold">{fact.value}</p>
+                    <p className="truncate text-[23px] font-semibold">
+                      <StarValue value={fact.value} />
+                    </p>
                   </div>
                 ))}
               </Panel>
             ) : null}
             {comment}
           </div>
-          <Screenshot src={data.shot} path="shot" className="flex-1" />
+          <Screenshot src={data.shot} path="shot" fit={data.shotFit} className="flex-1" />
         </div>
       </CardFrame>
     );
@@ -74,13 +77,15 @@ function FmProfileCard({ data, format, brand }: TemplateProps<FmProfileData>) {
           <Photo src={data.photo} alt={data.name} path="photo" className="h-[170px] w-[150px] rounded-[24px]" />
           {identity}
         </div>
-        <Screenshot src={data.shot} path="shot" className="flex-1" />
+        <Screenshot src={data.shot} path="shot" fit={data.shotFit} className="flex-1" />
         {data.facts.length > 0 ? (
           <Panel className="flex divide-x divide-fm-line py-3.5">
             {data.facts.slice(0, 4).map((fact, i) => (
               <div key={i} className="min-w-0 flex-1 px-5">
                 <Label className="block truncate text-[15px]">{fact.label}</Label>
-                <p className="mt-1 truncate text-[26px] font-semibold">{fact.value}</p>
+                <p className="mt-1 truncate text-[26px] font-semibold">
+                  <StarValue value={fact.value} />
+                </p>
               </div>
             ))}
           </Panel>
@@ -109,7 +114,16 @@ export const fmProfile = defineTemplate<FmProfileData>({
       key: "shot",
       label: "FM profil ekran görüntüsü",
       type: "image",
-      hint: "Oyundaki profil ekranının görüntüsü; kırpılmadan, tam sığacak şekilde yerleşir.",
+      hint: "Önizlemedeki alana tıkla, sürükle-bırak ya da Ctrl+V ile yapıştır.",
+    },
+    {
+      key: "shotFit",
+      label: "Ekran görüntüsü yerleşimi",
+      type: "select",
+      options: [
+        { value: "contain", label: "Tamamı görünsün" },
+        { value: "cover", label: "Alanı doldursun (kenarlar kırpılır)" },
+      ],
     },
     {
       key: "facts",
@@ -131,6 +145,7 @@ export const fmProfile = defineTemplate<FmProfileData>({
     subtitle: "Göztepe · 19 yaş",
     photo: "",
     shot: "",
+    shotFit: "contain",
     facts: [
       { label: "Değer", value: "€14.5M" },
       { label: "Maaş", value: "€12K/hf" },
